@@ -1,0 +1,10 @@
+Texture,/characters/kongol/textures/combat!
+Idle,/characters/kongol/models/combat,32,/characters/kongol/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Pursuit,/characters/kongol/models/combat,32,None,None,4087,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+Inferno,/characters/kongol/models/combat,32,None,None,4088,"[16, 17, 18, 19, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+Bone Crush,/characters/kongol/models/combat,32,None,None,4089,"[16, 17, 18, 19, 20, 21, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+No addition 1,/characters/kongol/models/combat,32,None,None,4090,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+No addition 2,/characters/kongol/models/combat,32,None,None,4091,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+No addition 3,/characters/kongol/models/combat,32,None,None,4092,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+No addition 4,/characters/kongol/models/combat,32,None,None,4093,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+No addition 5,/characters/kongol/models/combat,32,None,None,4094,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
