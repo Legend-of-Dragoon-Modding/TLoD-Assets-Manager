@@ -118,17 +118,3 @@ class DeffFile:
             print(f'Report this error as DEFF File not recognised with the path to the file...')
 
         return final_deff_data
-    
-    """def calculate_new_transformation(self, parent_transforms=list, child_transforms=list) -> list:
-        
-        This simple Method just calculate the new transformations doing a sum of the parent vector
-        to the child vector, i hope this works as did in my mind lol
-        
-        new_transforms: list = []
-
-        get_length = len(parent_transforms)
-        for index_in_list in range(0, get_length):
-            new_vector = parent_transforms[index_in_list] + child_transforms[index_in_list]
-            new_transforms.append(new_vector)
-
-        return new_transforms"""

@@ -8,7 +8,7 @@ Copyright (C) 2024 DooMMetaL
 
 """
 import math
-from random import randint, uniform
+from random import randint, uniform, normalvariate
 
 class Simulation:
     def __init__(self, simulation_properties=dict, parent_transforms=dict) -> None:
@@ -34,9 +34,12 @@ class Simulation:
             pulsation_type_0 = PulsationScale(process_data=processing_animation.simulation_data_compiled)
         elif simulation_type == 'ExplosionByObject':
             """
-            I have a serious problem in here, since this simulation depends on the first Vertex positioning
-            to be the placement for it, now, i have to take that value somehow
+            [I have a serious problem in here, since this simulation depends on the first Vertex positioning
+            to be the placement for it, now, i have to take that value somehow] ????
+            FUTURE ME - IM A LIAR AND A SERIOUS DUMB, EVERYTHING IS PASSED BY THE REL_LOC VALUE PFFF
             """
+            pass
+        elif simulation_type == 'ExplodingSphere':
             pass
         else:
             print(f'FATAL ERROR: Simulation Type {simulation_type} not recognised!!')
@@ -181,7 +184,7 @@ class RevolvingLinearIncrement:
     def __init__(self, process_data=dict) -> None:
         """
         Twister like Effect - Revolving Particles Linear Increment:\n
-        Particles are emitted unevenly from the start position in a Radius1 and 
+        Particles are emitted evenly from the start position in a Radius1 and 
         windwhirl until they reach the Final Frame. 
         
         Distance it's used as Y Value (Height)
@@ -190,7 +193,7 @@ class RevolvingLinearIncrement:
         self.generated_animation: dict = {}
         self.simulate_windwhirl()
     
-    def simulate_windwhirl(self):
+    def simulate_windwhirl(self) -> None:
         
         frames = self.process_data.get(f'Frames')
         particle_count = self.process_data.get(f'Count')
@@ -248,6 +251,64 @@ class RevolvingLinearIncrement:
             distance_travelled += distance_factor
 
         self.generated_animation = processed_particles
+
+class RevolvingNonLinerIncrement:
+    def __init__(self, process_data=dict) -> None:
+        #TODO: NEED TO CHECK AND REFACTOR THE CODE TO MATCH KEYFRAME->OBJECT
+        """
+        Twister like Effect - Revolving Particles Non Linear Increment:\n
+        Particles are emitted unevenly from the start position in a Radius1 and 
+        windwhirl until they reach the Final Frame. 
+        
+        Distance it's used as Y Value (Height)
+        """
+        self.process_data = process_data
+        self.generated_animation: dict = {}
+    
+    def simulate_random_windwhirl(self) -> None:
+        frames = self.process_data.get(f'Frames')
+        particle_count = self.process_data.get(f'Count')
+        particle_initial_location = self.process_data.get(f'Location')
+        particle_initial_rotation = self.process_data.get(f'Rotation')
+        particle_initial_scale = self.process_data.get(f'Scale')
+
+        outer_radius_factor = 2.0
+        inner_radius_factor = 0.1
+        outer_radius_calculation = (outer_radius_factor / frames)
+
+        acceleration_start = 0.1
+        acceleration_end = 2.5
+        random_acceleration = acceleration_start
+        random_acceleration_flag = True
+
+        for current_frame in range(0, frames):
+            random_angle = uniform(a=0.0, b=(math.pi * 2)) # Set a starting Pseudo Random Number to the Angle of a travelling Particle in the Inner Radius
+            
+            distance_travelled = 0.0
+            random_x_init = math.cos(random_angle) * inner_radius_factor
+            random_z_init = math.sin(random_angle) * inner_radius_factor
+            get_rotation_y = Vector.set_object_rotation_y(current_angle=random_angle)
+            new_r_angle = random_angle
+            outer_radius_sum = 0
+            for current_particle in range(0, particle_count):
+                
+                if random_acceleration_flag == True:
+                    current_acceleration = uniform(random_acceleration, acceleration_end)
+                else:
+                    current_acceleration = 0
+
+                if current_frame == 0:
+                    random_x = random_x_init * (outer_radius_calculation)
+                    random_z = random_z_init * (outer_radius_calculation)
+                else:
+                    random_x = math.cos(new_r_angle) * (outer_radius_sum)
+                    random_z = math.sin(new_r_angle) * (outer_radius_sum)
+                    get_rotation_y = Vector.set_object_rotation_y(current_angle=new_r_angle)
+
+                rottransscale_dict = {"Rx": 0, "Ry": get_rotation_y, "Rz": 0, "Tx": round(random_x, 12), "Ty": round(distance_travelled, 12), "Tz": round(random_z, 12), "Sx": 1, "Sy": 1, "Sz": 1}
+                new_r_angle += 0.1
+                distance_travelled -= (0.05 * current_acceleration)
+                outer_radius_sum += outer_radius_calculation
 
 class PulsationScale:
     def __init__(self, process_data=dict) -> None:
@@ -332,7 +393,57 @@ class PulsationScale:
             processed_particles.update(build_keyframe_dict)
         
         self.generated_animation = processed_particles
-                
+
+class SphereExplosion:
+    def __init__(self, process_data=dict) -> None:
+        #TODO: NEED TO CHECK AND REFACTOR THE CODE TO MATCH KEYFRAME->OBJECT
+        """
+        Explosion Particle Sphere: Generate a Uniform Particle Implosion using random points values to set the Origin, \n
+        going from Outer Radius to Inner Radius"""
+        self.process_data = process_data
+        self.generated_animation: dict = {}
+        self.sphere_explosion()
+    
+    def sphere_explosion(self) -> None:
+        processed_particles: dict = {}
+
+        frames = self.process_data.get(f'Frames')
+        particle_count = self.process_data.get(f'Count')
+        particle_initial_location = self.process_data.get(f'Location')
+        particle_initial_rotation = self.process_data.get(f'Rotation')
+        particle_initial_scale = self.process_data.get(f'Scale')
+
+        outer_radius_factor = 2.0 # TODO: I can use this to set different factor if needed in the future
+        inner_radius_factor = 0.5 # TODO: I can use this to set different factor if needed in the future
+
+        distance_step = (outer_radius_factor - inner_radius_factor) / frames
+        for current_frame in range(0, frames):
+
+            #SETTING RANDOM POINT FOR X, Y, Z to generate the starting point of the particle
+            random_x = normalvariate()
+            random_y = normalvariate()
+            random_z = normalvariate()
+
+            normalize_value = 1 / math.sqrt(math.pow(random_x, 2) + math.pow(random_y, 2) + math.pow(random_z, 2))
+            normalized_x = random_x * normalize_value
+            normalized_y = random_y * normalize_value
+            normalized_z = random_z * normalize_value
+
+            distance_travelled = inner_radius_factor
+            rotation_degrees = 0.0
+            for current_object in range(0, particle_count):
+                final_x = normalized_x * distance_travelled
+                final_y = normalized_y * distance_travelled
+                final_z = normalized_z * distance_travelled
+
+                rot_x = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
+                rot_y = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
+                rot_z = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
+
+                rottransscale_dict = {"Rx": rot_x, "Ry": rot_y, "Rz": rot_z, "Tx": round(final_x, 12), "Ty": round(final_y, 12), "Tz": round(final_z, 12), "Sx": 1, "Sy": 1, "Sz": 1}
+                distance_travelled += distance_step
+                rotation_degrees += 11.25
+
 class Vector:
     def __init__(self) -> None:
         """Vector Manipulation"""
