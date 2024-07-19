@@ -18,7 +18,7 @@ class Simulation:
         self.animation_baked: dict = {}
         self.simulate_system()
     
-    def simulate_system(self):
+    def simulate_system(self) -> None:
         this_animation: dict = {}
         # Position (Location), Rotation, Scale to the Parent will be calculated in the SimulationData!!
         processing_animation = SimulationData(process_particle_data=self.simulation_properties, parent_transforms=self.parent_transforms)
@@ -32,13 +32,6 @@ class Simulation:
             revolving_type_0 = RevolvingLinearIncrement(process_data=processing_animation.simulation_data_compiled)
         elif simulation_type == 'Pulsation':
             pulsation_type_0 = PulsationScale(process_data=processing_animation.simulation_data_compiled)
-        elif simulation_type == 'ExplosionByObject':
-            """
-            [I have a serious problem in here, since this simulation depends on the first Vertex positioning
-            to be the placement for it, now, i have to take that value somehow] ????
-            FUTURE ME - IM A LIAR AND A SERIOUS DUMB, EVERYTHING IS PASSED BY THE REL_LOC VALUE PFFF
-            """
-            pass
         elif simulation_type == 'ExplodingSphere':
             pass
         else:
@@ -58,7 +51,7 @@ class ExplosionFrontUniform:
         self.generated_animation: dict = {}
         self.simulate_explosion()
     
-    def simulate_explosion(self):
+    def simulate_explosion(self) -> None:
         frames = self.process_data.get(f'Frames')
         particle_count = self.process_data.get(f'Count')
         particle_initial_location = self.process_data.get(f'Location')
@@ -117,7 +110,7 @@ class ExplosionFrontNonUniform:
         self.generated_animation: dict = {}
         self.simulate_explosion()
     
-    def simulate_explosion(self):
+    def simulate_explosion(self) -> None:
         frames = self.process_data.get(f'Frames')
         particle_count = self.process_data.get(f'Count')
         particle_initial_location = self.process_data.get(f'Location')
@@ -321,7 +314,7 @@ class PulsationScale:
         self.generated_animation: dict = {}
         self.pulsation()
     
-    def pulsation(self):
+    def pulsation(self) -> None:
         frames = self.process_data.get(f'Frames')
         particle_count = self.process_data.get(f'Count')
         particle_initial_location = self.process_data.get(f'Location')
@@ -416,9 +409,7 @@ class SphereExplosion:
         outer_radius_factor = 2.0 # TODO: I can use this to set different factor if needed in the future
         inner_radius_factor = 0.5 # TODO: I can use this to set different factor if needed in the future
 
-        distance_step = (outer_radius_factor - inner_radius_factor) / frames
-        for current_frame in range(0, frames):
-
+        for current_particle_random in range(0, particle_count):
             #SETTING RANDOM POINT FOR X, Y, Z to generate the starting point of the particle
             random_x = normalvariate()
             random_y = normalvariate()
@@ -429,20 +420,25 @@ class SphereExplosion:
             normalized_y = random_y * normalize_value
             normalized_z = random_z * normalize_value
 
-            distance_travelled = inner_radius_factor
-            rotation_degrees = 0.0
+        distance_step = (outer_radius_factor - inner_radius_factor) / frames
+        distance_travelled = inner_radius_factor
+        rotation_degrees = 0.0
+        for current_frame in range(0, frames):
             for current_object in range(0, particle_count):
-                final_x = normalized_x * distance_travelled
-                final_y = normalized_y * distance_travelled
-                final_z = normalized_z * distance_travelled
+                final_loc_x = (normalized_x * distance_travelled) + particle_initial_location[0]
+                final_loc_y = (normalized_y * distance_travelled) + particle_initial_location[1]
+                final_loc_z = (normalized_z * distance_travelled) + particle_initial_location[2]
 
-                rot_x = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
-                rot_y = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
-                rot_z = uniform(rotation_degrees, ((rotation_degrees + 1) * 2))
+                final_rot_x = (uniform(rotation_degrees, ((rotation_degrees + 1) * 2))) + particle_initial_rotation[0]
+                final_rot_y = (uniform(rotation_degrees, ((rotation_degrees + 1) * 2))) + particle_initial_rotation[1]
+                final_rot_z = (uniform(rotation_degrees, ((rotation_degrees + 1) * 2))) + particle_initial_rotation[2]
 
-                rottransscale_dict = {"Rx": rot_x, "Ry": rot_y, "Rz": rot_z, "Tx": round(final_x, 12), "Ty": round(final_y, 12), "Tz": round(final_z, 12), "Sx": 1, "Sy": 1, "Sz": 1}
-                distance_travelled += distance_step
-                rotation_degrees += 11.25
+                rottransscale_dict = {"Rx": round(final_rot_x, 12), "Ry": round(final_rot_y, 12), "Rz": round(final_rot_z, 12), 
+                                      "Tx": round(final_loc_x, 12), "Ty": round(final_loc_y, 12), "Tz": round(final_loc_z, 12), 
+                                      "Sx": round(particle_initial_scale[0], 12), "Sy": round(particle_initial_scale[1], 12), "Sz": round(particle_initial_scale[2], 12)}
+            
+            distance_travelled += distance_step
+            rotation_degrees += 11.25
 
 class Vector:
     def __init__(self) -> None:
@@ -459,11 +455,11 @@ class Vector:
     
     @staticmethod
     def get_xyz_vector(current_distance=float, current_angle=int) -> list: # TODO why i have this method written??
-        values = []
+        values: list = []
         return values
     
     @staticmethod
-    def set_object_rotation_y(current_angle=int):
+    def set_object_rotation_y(current_angle=float):
         rotation_y = 180 - math.degrees(current_angle) - 90
         return rotation_y
 
@@ -474,7 +470,7 @@ class SimulationData:
         self.simulation_data_compiled: dict = {}
         self.compile_simulation_data()
     
-    def compile_simulation_data(self):
+    def compile_simulation_data(self) -> None:
         final_simulation_transforms: dict = {}
 
         simulation_type = self.process_particle_data.get(f'SimType')
