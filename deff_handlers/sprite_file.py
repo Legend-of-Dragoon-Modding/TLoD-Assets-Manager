@@ -38,4 +38,4 @@ class Sprite:
         quad_particles = particle_mesh.Quad(generate_particle_properties=self.sprite_properties, particle_texture=texture_properties)
 
         # Generate Animations for the generated particles
-        particles_simulation = particle_simulation.Simulation(simulation_properties=self.sprite_properties, parent_transforms=self.parent_transforms, all_particle_properties=self.all_particles_properties)
+        particles_simulation = particle_simulation.Simulation(simulation_properties=self.sprite_properties, parent_transforms=self.parent_transforms)
