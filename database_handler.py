@@ -109,7 +109,7 @@ class DatabaseHandler:
 
             elif length_this_path == 4: # This are Characters and CutScenes Databases, which also had a sligthy different format from the others CSV
                 get_parent_name = split_file_path[2]
-                get_child_name = split_file_path[3].replace('.csv', '')
+                get_child_name = split_file_path[3].replace('.csv', '').replace('_', ' ')
                 this_path_data_double = get_parent_name, get_child_name, database_file_path
                 double_nest_path.append(this_path_data_double)
             else:
@@ -172,6 +172,7 @@ class DatabaseHandler:
                                             'AttackFolder': attack_path, 'AttackFiles': attack_files}}
                     this_inner_dict_nested[f'{nested_subparent_name}'].update(object_dict_inner)
                 database_to_process['Characters'].update(this_inner_dict_nested)
+
             elif nested_parent_name == 'CutScenes':
                 this_inner_dict_nested_2: dict = {f'{nested_subparent_name}': {}}
                 # This is the Character Models/Animations data

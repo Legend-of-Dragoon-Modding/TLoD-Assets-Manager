@@ -18,3 +18,12 @@ class NewModel:
         gltf_data: dict = {}
 
         tmd_model_data = self.model_data.get(f'Converted_Data')
+        print(tmd_model_data)
+    
+    def quad_to_tri(self):
+        """
+        Quad to Tri:\n
+        Convert a Primitive Quadrilatera intro a Triangle\n
+        since glTF format won't support Quads in their Primitives structure
+        """
+        pass

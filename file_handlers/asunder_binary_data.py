@@ -63,10 +63,10 @@ class Asset:
         normal_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Normal')
         primitive_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Primitive')
 
+        arrage_vnp_data = self.vnp_data_arrager(number_objects=number_objects_int, vertex_data=vertex_data.model_converted, normal_data=normal_data.model_converted, primitive_data=primitive_data.model_converted)
+
         tmd_final_dict = {'Format': 'TMD_Standard', 'Data_Table': object_table_dict, 
-                          'Converted_Data': 
-                          {'Vertex_Data': vertex_data.model_converted, 'Normal_Data': normal_data.model_converted, 
-                           'Primitive_Data': primitive_data.model_converted}}
+                          'Converted_Data': arrage_vnp_data}
         self.model_converted_data = tmd_final_dict
 
     def split_cc_tmd(self):
@@ -88,10 +88,11 @@ class Asset:
         normal_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Normal')
         primitive_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Primitive')
 
+        arrage_vnp_data = self.vnp_data_arrager(object_number=number_objects_int, vertex_data=vertex_data.model_converted, normal_data=normal_data.model_converted, primitive_data=primitive_data.model_converted)
+
         tmd_final_dict = {'Format': 'TMD_Standard', 'Data_Table': object_table_dict, 
-                          'Converted_Data': 
-                          {'Vertex_Data': vertex_data.model_converted, 'Normal_Data': normal_data.model_converted, 
-                           'Primitive_Data': primitive_data.model_converted}}
+                          'Converted_Data': arrage_vnp_data}
+        
         self.model_converted_data = tmd_final_dict
 
     def split_cc_saf(self):
@@ -159,3 +160,23 @@ class Asset:
             start_slice += 28
 
         return object_table
+    
+    def vnp_data_arrager(self, object_number=int, vertex_data=dict, normal_data=dict, primitive_data=dict) -> dict:
+        """
+        Vertex-Normal-Primitive Data arrager:\n
+        This will arrage the three types of data to be sort in objects\n
+        {{Object_0: Vertex_0, Normal_0, Primitives_0}, {Object_n: Vertex_n, Normal_n, Primitives_n}}
+        """
+        final_objects_dict: dict = {}
+
+        for current_object_number in range(0, object_number):
+            get_current_vertex = vertex_data.get(f'Object_Number_{current_object_number}')
+            get_current_normal = normal_data.get(f'Object_Number_{current_object_number}')
+            get_current_primitives = primitive_data.get(f'Object_Number_{current_object_number}')
+            new_dict_sort: dict = {f'Object_Number_{current_object_number}': 
+                                   {'Vertex': get_current_vertex, 
+                                    'Normal': get_current_normal, 
+                                    'Primitives': get_current_primitives}}
+            final_objects_dict.update(new_dict_sort)
+            
+        return final_objects_dict
