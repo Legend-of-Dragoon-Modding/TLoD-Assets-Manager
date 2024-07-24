@@ -1,3 +1,3 @@
-Merchant,DRGN0/3390,32,DRGN0/3390,"[0, 1]",None,None,monsters/253/textures/combat
-Master Tasman,DRGN0/3391,32,DRGN0/3391,"[0, 1]",DRGN0/3847,[25],monsters/254/textures/combat
-Rose Tutorial,DRGN0/3392,32,DRGN0/3392,"[0, 1, 8, 9, 10, 11, 12, 13, 14]",DRGN0/3848,"[2, 4, 16, 17, 18, 19, 20, 21]",monsters/255/textures/combat
+Merchant,3390,32,3390,"[0, 1]",None,None,monsters/253/textures/combat
+Master Tasman,3391,32,3391,"[0, 1]",3847,[25],monsters/254/textures/combat
+Rose Tutorial,3392,32,3392,"[0, 1, 8, 9, 10, 11, 12, 13, 14]",3848,"[2, 4, 16, 17, 18, 19, 20, 21]",monsters/255/textures/combat

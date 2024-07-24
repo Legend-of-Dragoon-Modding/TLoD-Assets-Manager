@@ -21,11 +21,13 @@ from file_handlers import asunder_binary_data, binary_to_dict, folder_handler, d
 from gltf_handlers import gltf_compiler
 
 class BattleConversionMainWindow(QMainWindow):
-    def __init__(self, parent, icon=str, assets_database=dict, sc_folder=str):
+    def __init__(self, parent, icon=str, assets_database=dict, sc_folder=str, deploy_folder=str):
         super().__init__(parent=parent)
         self.icon = icon
         self.assets_database = assets_database
         self.sc_folder = sc_folder
+        self.deploy_folder = deploy_folder
+        self.check_sc_folder()
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.full_screen_available_x = self.screen().availableGeometry().width() # Maybe i should use this to generate the calcs for the OpenGL Window Widget
@@ -52,7 +54,6 @@ class BattleConversionMainWindow(QMainWindow):
         self.create_conversion_controls_panel()
     
     # Actions for the Menu Bar
-
     def build_actions(self):
         self.add_all_action = QAction('Add All to Convert', self)
         self.add_all_action.setShortcut(QKeySequence('Ctrl+A'))
@@ -67,7 +68,6 @@ class BattleConversionMainWindow(QMainWindow):
         queue_tools_menu.addAction(self.add_all_action)
 
     # Creation of Widgets
-    
     def create_window_layout(self):
         # Create Main Widget to hold other widgets
         self.main_widget = QWidget(self)
@@ -90,12 +90,12 @@ class BattleConversionMainWindow(QMainWindow):
         self.treeview.setVerticalScrollBar(self.tree_view_scrollbar)
     
     def create_opengl_window(self):
-        # Create the ListWidget for data
+        # Create the Main Widget
         self.opengl_window = QGroupBox('OpenGL Window')
         self.main_window_layout.addWidget(self.opengl_window,0,1)
     
     def create_conversion_queue(self):
-        # Create the ListWidget for data
+        # Create the Main Widget and Setup it
         self.conversion_queue_listwidget = QListWidget()
         adjust_conv_queue_x = self.full_screen_available_x // 2
         adjust_conv_queue_y = self.full_screen_available_y // 3
@@ -105,26 +105,39 @@ class BattleConversionMainWindow(QMainWindow):
         self.conversion_queue_listwidget.setVerticalScrollBar(self.conversion_queue_scrollbar)
     
     def create_conversion_controls_panel(self):
+        # Create Main Widget
         self.control_panel_box = QGroupBox('Conversion Controls')
         self.main_window_layout.addWidget(self.control_panel_box,0,2,0,1)
+        # Create Layout
         self.control_panel_layout = QGridLayout(self.control_panel_box)
+        # Create Label to show Text
         self.text_label_controls = QLabel('Here you can control everything related to Conversion')
-        self.control_panel_layout.addWidget(self.text_label_controls)
+        # Create Buttons
         self.convert_model_button = QPushButton('Convert Models')
+
+        # Setup all the Widgets
         self.convert_model_button.setMaximumSize(150, 100)
         self.convert_model_button.setToolTip('Process the selected models')
+        self.control_panel_layout.addWidget(self.text_label_controls)
         self.control_panel_layout.addWidget(self.convert_model_button,0,1)
+        
+        # Setup Actions for Pushable/Selectable Widgets
         self.convert_model_button.clicked.connect(self.convert_model_selected)
         self.treeview.clicked.connect(self.check_if_selected)
         self.convert_model_button.setEnabled(False)
 
-
     # Specific Methods for each Widget
     def create_treeview_data(self):
+        self.name_black_list: list = []
+        self.super_parent_selected_nodes: str = f''
+        self.parent_selected_nodes: str = f''
+        self.children_selected_nodes: str = f''
         self.treeview_model = QStandardItemModel()
         self.root_node = self.treeview_model.invisibleRootItem()
         this_top_parent = self.assets_database.get('Battle')
+        parent_contain_sub_list: list = ['Characters', 'CutScenes']
         for parent in this_top_parent:
+            self.name_black_list.append(parent)
             parent_change_text = parent.replace("_", " ")
             this_parent = TreeviewItem(treeview_text=parent_change_text, font_size=16, set_bold=True)
             self.root_node.appendRow(this_parent)
@@ -133,49 +146,77 @@ class BattleConversionMainWindow(QMainWindow):
                 subparent_change_text = subparent.replace("_", " ")
                 this_subparent = TreeviewItem(treeview_text=subparent_change_text, font_size=14, set_bold=False)
                 this_parent.appendRow(this_subparent)
-                #get_child = get_subparent.get(f'{subparent}') # --> This is the data of this Child
+                if parent in parent_contain_sub_list:
+                    self.name_black_list.append(subparent)
+                    get_child = get_subparent.get(f'{subparent}')
+                    for child in get_child:
+                        if 'Texture' not in child:
+                            child_change_text = child.replace("_", " ")
+                            this_child = TreeviewItem(treeview_text=child_change_text, font_size=12, set_bold=True)
+                            this_subparent.appendRow(this_child)
+
         self.treeview.setModel(self.treeview_model)
         self.treeview.setExpandsOnDoubleClick(True)
 
     def check_if_selected(self):
-        name_black_list: list = ['Characters', 'CutScenes', 'Battle Stages', 'Bosses', 'Enemies', 'Tutorial']
         selected_items = self.treeview.selectionModel().selectedIndexes()
-        self.current_battle_model_selected = f''
-        self.parent_battle_model_selected = f''
         for current_selection in selected_items:
             name_selected = self.treeview_model.data(current_selection, 0)
             parent_selected = self.treeview_model.parent(current_selection)
             parent_name = self.treeview_model.data(parent_selected, 0)
-            if name_selected not in name_black_list:
-                self.convert_model_button.setEnabled(True)
-                self.current_battle_model_selected = name_selected
-                self.parent_battle_model_selected = parent_name
-            else:
+            have_children = self.treeview_model.hasChildren(current_selection)
+            if parent_name == None:
                 self.convert_model_button.setEnabled(False)
-                self.current_battle_model_selected = f''
-                self.parent_battle_model_selected = f''
+                self.super_parent_selected_nodes = name_selected
+            elif have_children == False:
+                self.children_selected_nodes = name_selected
+                self.parent_selected_nodes = parent_name
+                self.convert_model_button.setEnabled(True)
+            
+            if (parent_name != None) and (have_children == True):
+                self.convert_model_button.setEnabled(False)
 
     def convert_model_selected(self):
         get_battle_model_dict = self.assets_database.get(f'Battle')
-        get_parent_dict = get_battle_model_dict.get(f'{self.parent_battle_model_selected}')
-        get_current_battle_model = get_parent_dict.get(f'{self.current_battle_model_selected}')
-        file_fantasy_name = self.current_battle_model_selected.replace(' ', '_')
-        for current_object_to_convert in get_current_battle_model:
-            this_conversion_obj = get_current_battle_model.get(f'{current_object_to_convert}')
-            if current_object_to_convert == 'Texture':
-                print('Texture path...', f'{self.sc_folder}{this_conversion_obj}')
-            else:
-                final_file_name = f'{file_fantasy_name}_{current_object_to_convert}'
-                get_model_path = this_conversion_obj.get(f'ModelFolder')
-                get_model_file = this_conversion_obj.get(f'ModelFile')
-                model_file_path = f'{self.sc_folder}{get_model_path}/{get_model_file}'
-                file_model_specs = {'Format': 'TMD_CContainer', 'Path': model_file_path, 'Name': f'{final_file_name}', 'isAnimated': False, 'isTextured': False}
-                file_model_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=file_model_specs)
-                processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
-                process_to_gltf = gltf_compiler.NewModel(model_data=processed_data_model.model_converted_data, animation_data=None)
-                #debug_files_dict = {'TMDReport': True, 'PrimPerObj': True, 'PrimData': True} # This is only pass one, even in batch
-                #new_folder = folder_handler.Folders(deploy_folder_path=f'C:\\Users\\Axel\\Desktop\\TMD_DUMP\\', file_nesting='Dart_Test, Animation', file_name=final_file_name)
-                #debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_files_dict, file_data=processed_data_model.model_converted_data)
+        selected_items_list: list = [self.super_parent_selected_nodes, self.parent_selected_nodes, self.children_selected_nodes]
+        """Clean the Selected Items List to fit the following logic:
+        Parent->Child (Model Object to Convert)
+        SuperParent->Parent->Child (Model Object to Convert) ==> This is used in CutScenes and Characters list due to the nesting"""
+        clean_selected_items: list = []
+        for this_selection in selected_items_list:
+            if this_selection not in clean_selected_items:
+                clean_selected_items.append(this_selection)
+        
+        if len(clean_selected_items) == 2:
+            # Get Data to be Converted
+            parent_name_denest = clean_selected_items[0].replace(" ", "_")
+            model_name_denest = clean_selected_items[1]
+            final_folder_model = model_name_denest.replace(" ", "_")
+            get_complete_objects_dict = get_battle_model_dict.get(f'{parent_name_denest}')
+            get_current_object_dict = get_complete_objects_dict.get(f'{model_name_denest}')
+            get_model_folder_path = get_current_object_dict.get(f'ModelFolder')
+            get_model_file = get_current_object_dict.get(f'ModelFile')
+            get_model_passive_anim_path = get_current_object_dict.get(f'PassiveFolder')
+            get_model_passive_anim_files = get_current_object_dict.get(f'PassiveFiles')
+            get_model_attack_anim_path = get_current_object_dict.get(f'AttackFolder')
+            get_model_attack_anim_files = get_current_object_dict.get(f'AttackFiles')
+            get_model_textures = get_current_object_dict.get(f'Textures')
+            # Setting up some Properties to Finish the Conversion
+            model_complete_file_path = f'{self.sc_folder}/{get_model_folder_path}/{get_model_file}'
+            folder_nesting = f'{parent_name_denest}, {final_folder_model}'
+            file_model_specs = {'Format': 'TMD_CContainer', 'Path': model_complete_file_path, 'Name': f'{model_name_denest}', 'isAnimated': False, 'isTextured': False}
+            debug_files_dict = {'TMDReport': True, 'PrimPerObj': True, 'PrimData': True} # This is only pass one, even in batch
+            # Start Conversion
+            new_folder = folder_handler.Folders(deploy_folder_path=self.deploy_folder, file_nesting=folder_nesting, file_name=model_name_denest)
+            file_model_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=file_model_specs)
+            processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
+            debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_files_dict, file_data=processed_data_model.model_converted_data)
+            process_to_gltf = gltf_compiler.NewModel(model_data=processed_data_model.model_converted_data, animation_data=None)
+
+    def check_sc_folder(self) -> None:
+        init_sc_folder = self.sc_folder
+        new_sc_folder = f'{init_sc_folder}/SECT/DRGN0.BIN'
+        self.sc_folder = new_sc_folder
 
 class TreeviewItem(QStandardItem):
     def __init__(self, treeview_text=str, font_size=int, set_bold=bool, color=QColor(0, 0, 0)):

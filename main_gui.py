@@ -298,7 +298,8 @@ class MainWindow(QMainWindow):
 
     def battle_conversion_window(self):
         sc_folder_get = self.init_config.get(f'SC_Folder')
-        battle_conversion_window = BattleConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get)
+        deploy_folder = self.init_config.get(f'Deploy_Folder')
+        battle_conversion_window = BattleConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder)
     
     def submap_conversion_window(self):
         submap_conversion_window = SubMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database)
