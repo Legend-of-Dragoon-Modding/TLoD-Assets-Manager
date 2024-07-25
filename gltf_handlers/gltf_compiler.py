@@ -42,7 +42,7 @@ class NewModel:
                     # TODO Convert from TMD to glTF
                     this_primitive = get_primitive_nest.get(f'{primitive_type}')
                     # First we split the Quads into Triangles, so glTF Primitive Format is achieved
-                    split_primitive = self.split_quad_primitive(primitive=this_primitive)
+                    split_primitive = self.split_quad_primitive(primitive_properties=this_primitive, primitive_type=primitive_type)
                 else:
                     # TODO Convert from TMD to glTF
                     this_non_change_primitive = get_primitive_nest.get(f'{primitive_type}')
@@ -52,15 +52,80 @@ class NewModel:
             final_primitive_compilation: dict = {f'{current_primitive}': recompiled_primitives}
             new_primitives.update(final_primitive_compilation)
 
+        print(new_primitives)
         return new_primitives
     
-    def split_quad_primitive(self, primitive=dict) -> dict:
+    def split_quad_primitive(self, primitive_properties=dict, primitive_type=str) -> dict:
         """
         Quad to Tri:\n
         Convert a Primitive Quadrilatera into a Triangle\n
         since glTF format won't support Quads in their Primitives structure
         """
-        new_primitive: dict = {}
+        new_primitive_1: dict = {}
+        new_primitive_2: dict = {}
+
+        vertex_index_0 = primitive_properties.get('vertex0')
+        vertex_index_1 = primitive_properties.get('vertex1')
+        vertex_index_2 = primitive_properties.get('vertex2')
+        vertex_index_3 = primitive_properties.get('vertex3')
+
+        normal_index_0 = primitive_properties.get('normal0')
+        normal_index_1 = primitive_properties.get('normal1')
+        normal_index_2 = primitive_properties.get('normal2')
+        normal_index_3 = primitive_properties.get('normal3')
+
+        u_0 = primitive_properties.get('u0')
+        v_0 = primitive_properties.get('v0')
+        u_1 = primitive_properties.get('u1')
+        v_1 = primitive_properties.get('v1')
+        u_2 = primitive_properties.get('u2')
+        v_2 = primitive_properties.get('v2')
+        u_3 = primitive_properties.get('u3')
+        v_3 = primitive_properties.get('v3')
+
+        r_0 = primitive_properties.get('r0')
+        g_0 = primitive_properties.get('g0')
+        b_0 = primitive_properties.get('b0')
+        r_1 = primitive_properties.get('r1')
+        g_1 = primitive_properties.get('g1')
+        b_1 = primitive_properties.get('b1')
+        r_2 = primitive_properties.get('r2')
+        g_2 = primitive_properties.get('g2')
+        b_2 = primitive_properties.get('b2')
+        r_3 = primitive_properties.get('r3')
+        g_3 = primitive_properties.get('g3')
+        b_3 = primitive_properties.get('b3')
+        
+        if normal_index_0 == None:
+            normal_index_0 = 0
+            normal_index_1 = 0
+            normal_index_2 = 0
+            normal_index_3 = 0
+        
+        if u_0 == None:
+            u_0 = 0.0
+            v_0 = 0.0
+            u_1 = 0.0
+            v_1 = 0.0
+            u_2 = 0.0
+            v_2 = 0.0
+            u_3 = 0.0
+            v_3 = 0.0
+        
+        if (r_0 == None) and (b_3 == None):
+            r_0 = 0
+            g_0 = 0
+            b_0 = 0
+            r_1 = 0
+            g_1 = 0
+            b_1 = 0
+            r_2 = 0
+            g_2 = 0
+            b_2 = 0
+            r_3 = 0
+            g_3 = 0
+            b_3 = 0
 
 
-        return new_primitive
+
+        return new_primitive_1, new_primitive_2
