@@ -13,12 +13,13 @@ Copyright (C) 2024 DooMMetaL
 """
 import sys
 import os
+import gc
 from PyQt6.QtWidgets import QApplication, QMainWindow, QStatusBar, QGridLayout, QWidget, QScrollBar, QTreeView, QListWidget, QGroupBox, QLabel, QPushButton
 from PyQt6.QtGui import QIcon, QKeySequence, QAction, QStandardItemModel, QStandardItem, QColor, QFont
 from PyQt6.QtCore import QAbstractItemModel, Qt
 import database_handler
 from file_handlers import asunder_binary_data, binary_to_dict, folder_handler, debug_files_writer
-from gltf_handlers import gltf_compiler
+from gltf_handlers import gltf_compiler, gltf_converter
 
 class BattleConversionMainWindow(QMainWindow):
     def __init__(self, parent, icon=str, assets_database=dict, sc_folder=str, deploy_folder=str):
@@ -212,6 +213,8 @@ class BattleConversionMainWindow(QMainWindow):
             processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
             debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_files_dict, file_data=processed_data_model.model_converted_data)
             process_to_gltf = gltf_compiler.NewModel(model_data=processed_data_model.model_converted_data, animation_data=None)
+            #convert_gltf = gltf_converter.gltfFile(gltf_to_convert=process_to_gltf.gltf_format, gltf_file_name=model_name_denest, gltf_deploy_path=new_folder.new_file_name)
+            print(f'CONVERSION OF FILE: {model_name_denest} COMPLETE')
 
     def check_sc_folder(self) -> None:
         init_sc_folder = self.sc_folder

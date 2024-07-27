@@ -47,8 +47,8 @@ class ConfigurationHandler:
         first_run_flag = database_from_string_to_list[1].replace(' ', '').replace('\n','').split('=')
         resolution_x = database_from_string_to_list[2].replace(' ', '').replace('\n','').split('=')
         resolution_y = database_from_string_to_list[3].replace(' ', '').replace('\n','').split('=')
-        severed_chains_folder = database_from_string_to_list[4].replace(' ', '').replace('\n','').split('=')
-        deploy_folder = database_from_string_to_list[5].replace(' ', '').replace('\n','').split('=')
+        severed_chains_folder = database_from_string_to_list[4].replace(' ', '').replace('\n','').replace('/', '\\').split('=')
+        deploy_folder = database_from_string_to_list[5].replace(' ', '').replace('\n','').replace('/', '\\').split('=')
 
         if (first_run_flag[1] == 'True') or (first_run_flag[1] == f''):
             start_up_dialog = QMessageBox.information(None, f'FIRST START-UP', f'We will do a start-up configuration\nplease follow the steps', QMessageBox.StandardButton.Ok)
