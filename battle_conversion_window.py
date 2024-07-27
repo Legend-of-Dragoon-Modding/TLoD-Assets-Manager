@@ -212,7 +212,7 @@ class BattleConversionMainWindow(QMainWindow):
             file_model_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=file_model_specs)
             processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
             debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_files_dict, file_data=processed_data_model.model_converted_data)
-            process_to_gltf = gltf_compiler.NewModel(model_data=processed_data_model.model_converted_data, animation_data=None)
+            process_to_gltf = gltf_compiler.NewModel(model_data=processed_data_model.model_converted_data, animation_data=None, file_name=model_name_denest)
             #convert_gltf = gltf_converter.gltfFile(gltf_to_convert=process_to_gltf.gltf_format, gltf_file_name=model_name_denest, gltf_deploy_path=new_folder.new_file_name)
             print(f'CONVERSION OF FILE: {model_name_denest} COMPLETE')
 

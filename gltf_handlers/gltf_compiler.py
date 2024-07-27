@@ -10,9 +10,10 @@ Copyright (C) 2024 DooMMetaL
 import gc
 
 class NewModel:
-    def __init__(self, model_data=dict, animation_data=dict | None) -> None:
+    def __init__(self, model_data=dict, animation_data=dict | None, file_name=str) -> None:
         self.model_data = model_data
         self.animation_data = animation_data
+        self.file_name = file_name
         self.gltf_format: dict = {}
         self.model_arrager()
     
@@ -23,21 +24,41 @@ class NewModel:
         tmd_model_data = self.model_data.get(f'Converted_Data')
         tmd_model_objects_number = len(self.model_data.get(f'Data_Table'))
 
+        this_incremental_index = 0
         for tmd_object_number in range(0, tmd_model_objects_number):
             get_this_object = tmd_model_data.get(f'Object_Number_{tmd_object_number}')
             get_vertex_this_object = get_this_object.get(f'Vertex')
             get_normal_this_object = get_this_object.get(f'Normal')
             get_primitives_this_object = get_this_object.get(f'Primitives')
-            processes_primitives_to_gltf = self.primitive_tmd_to_gltf(primitives_to_process=get_primitives_this_object)
-            primitives_gltf = processes_primitives_to_gltf[0]
-            uv_buffers = processes_primitives_to_gltf[1]
-            color_buffers = processes_primitives_to_gltf[2]
+            processes_primitives_to_gltf = self.primitive_tmd_to_gltf_binary(primitives_to_process=get_primitives_this_object)
+            uv_buffers = processes_primitives_to_gltf[0]
+            color_buffers = processes_primitives_to_gltf[1]
+            
+            this_position = this_incremental_index
+            this_normal = this_incremental_index + 1
+            this_texcoord = this_incremental_index + 2
+            this_color_0 = this_incremental_index + 3
+            this_color_1 = this_incremental_index + 4
+            this_indices = this_incremental_index + 5
+            this_material = tmd_object_number
 
-            descriptor_json: dict = {f'Object_Number_{tmd_object_number}': primitives_gltf}
-            buffers: dict = {'Vertices': get_vertex_this_object, 'Normals': get_normal_this_object, 'UV': uv_buffers, 'Color': color_buffers}
+            this_attributes: dict = {'POSITION': this_position, 'NORMAL': this_normal,
+                                     'TEXCOORD_0': this_texcoord, 
+                                     'COLOR_0': this_color_0, 'COLOR_1': this_color_1}
+
+            this_gltf_primitive = {f'PrimObj_{tmd_model_objects_number}': 
+                                   {f'{self.file_name}_ObjNum_{tmd_model_objects_number}': 
+                                    {'attributes': this_attributes, 'indices': this_indices, 'material': this_material}}}
+
+            descriptor_json: dict = {f'Object_Number_{tmd_object_number}': this_gltf_primitive}
+            buffers: dict = {'indexVertices': get_vertex_this_object, 
+                             'IndicesNormals': get_normal_this_object, 
+                             'UV': uv_buffers, 'Color': color_buffers}
             to_compile_binary: dict = {f'Object_Number_{tmd_object_number}': buffers}
             gltf_descriptor_data.update(descriptor_json)
             gltf_to_binary_data.update(to_compile_binary)
+
+            this_incremental_index += 6
         
         del self.model_data
         del self.animation_data
@@ -45,11 +66,12 @@ class NewModel:
         
         self.gltf_format = {'Descriptor': gltf_descriptor_data, 'Buffers': gltf_to_binary_data}
     
-    def primitive_tmd_to_gltf(self, primitives_to_process=dict) -> tuple[dict, dict, dict]:
+    def primitive_tmd_to_gltf_binary(self, primitives_to_process=dict) -> tuple[dict, dict]:
         """
-        Primitive TMD to glTF:\n
-        Convert a TMD Primitive into a glTF Primitive Type.\n
-        Also split the UV and Color data from the TMD Primitive to form an Array.
+        Take TMD-Primitives Data and gather UV, Color\n
+        to generate UV and Colors Buffers for glTF Binary Format.\n
+        Also will take the Quads (4Vertex TMD Primitives and convert them into the 3Vertex Equivalent)\n
+        -> Using split_quad_primitive() Method
         """
         new_primitives: dict = {}
 
@@ -88,19 +110,15 @@ class NewModel:
                     new_primitive_number += 1
         # Creating UV and Colors Buffers, since in TMD Primitive Format all the buffers are stored in the primitive itself, except for Vertices and Normals
         # VERY BIG TODO: NEED TO SUPER SPLIT MORE AND MORE THIS
-        gltf_primitives: dict = {}
         uv_buffer_dict: dict = {}
         color_buffer_dict: dict = {}
         this_index = 0
+        
         for this_new_primitive in new_primitives:
             get_attributes = new_primitives.get(f'{this_new_primitive}')
-            adjust_attributes = self.adjust_attributes(attributes=get_attributes, current_index=this_index)
-            this_adjusted_attributes = adjust_attributes[0]
-            this_uv_buffer = adjust_attributes[1]
-            this_color_buffer = adjust_attributes[2]
-
-            this_gltf_primitive = {f'{this_new_primitive}': this_adjusted_attributes}
-            gltf_primitives.update(this_gltf_primitive)
+            adjust_attributes = self.generate_buffers(attributes=get_attributes, current_index=this_index)
+            this_uv_buffer = adjust_attributes[0]
+            this_color_buffer = adjust_attributes[1]
 
             single_line_uv_buffer = {f'{this_new_primitive}': this_uv_buffer}
             uv_buffer_dict.update(single_line_uv_buffer)
@@ -110,7 +128,7 @@ class NewModel:
 
             this_index += 1
 
-        return gltf_primitives, uv_buffer_dict, color_buffer_dict
+        return uv_buffer_dict, color_buffer_dict
     
     def split_quad_primitive(self, primitive_properties=dict) -> tuple[dict, dict]:
         """
@@ -165,14 +183,13 @@ class NewModel:
 
         return new_primitive_1, new_primitive_2
 
-    def adjust_attributes(self, attributes=dict, current_index=int) -> tuple[dict, list, list]:
+    def generate_buffers(self, attributes=dict) -> tuple[list, list]:
         """
-        Adjust Attributes:\n
-        Will take all the Primitives attributes and do the last re-shaping to work according to glTF Format\n
-        after this conversion, the original dict will stop to be used and create a new one with only the Indices for Data.\n
-        Also will split the UV and Color data into two list to be send to the Binary Compiler.
+        Generate Buffers:\n
+        This Method will take the data from TMD-Primitives and will generate the buffers\n
+        for glTF Binary Format, this include IndexVertices, IndexNormals, \n
+        UV, Color, Vertex and Normal data into two list to be send to the Binary Compiler.
         """
-        adjusted_primitive: dict = {}
         uv_attribute: list = []
         color_attribute: list = []
 
@@ -215,13 +232,9 @@ class NewModel:
             r_0 = r_1 = r_2 = r_0
             g_0 = g_1 = g_2 = g_0
             b_0 = b_1 = b_2 = b_0
-        
-        adjusted_primitive = {'vertex0': get_vertex_0, 'vertex1': get_vertex_1, 'vertex2': get_vertex_2, 
-                              'normal0': get_normal_0, 'normal1': get_normal_1, 'normal2': get_normal_2, 
-                              'TextureIndex': current_index, 'ColorIndex': current_index}
 
         uv_attribute = [u_0, v_0, u_1, v_1, u_2, v_2]
         color_attribute = [r_0, g_0, b_0, r_1, g_1, b_1, r_2, g_2, b_2]
 
-        return adjusted_primitive, uv_attribute, color_attribute
+        return uv_attribute, color_attribute
 
