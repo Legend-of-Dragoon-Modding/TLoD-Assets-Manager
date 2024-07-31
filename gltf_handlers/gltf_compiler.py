@@ -51,10 +51,10 @@ class NewModel:
             meshes: dict = {f'Object_Number_{tmd_object_number}': this_gltf_primitive}
             buffers_to_compile_binary: dict = {f'Object_Number_{tmd_object_number}': object_buffers}
 
-            this_object_accessor_position: dict = {'bufferView': this_position, 'componentType': 5126, 'count': elements_count * 3, 'type': 'VEC3'}
-            this_object_accessor_normal: dict = {'bufferView': this_normal, 'componentType': 5126, 'count': elements_count * 3, 'type': 'VEC3'}
-            this_object_accessor_textcoord: dict = {'bufferView': this_texcoord, 'componentType': 5126, 'count': elements_count * 3, 'type': 'VEC2'}
-            this_object_accessor_color_0: dict = {'bufferView': this_color_0, 'componentType': 5126, 'count': elements_count * 3, 'type': 'VEC3'}
+            this_object_accessor_position: dict = {'bufferView': this_position, 'componentType': 5126, 'count': elements_count, 'type': 'VEC3'}
+            this_object_accessor_normal: dict = {'bufferView': this_normal, 'componentType': 5126, 'count': elements_count, 'type': 'VEC3'}
+            this_object_accessor_textcoord: dict = {'bufferView': this_texcoord, 'componentType': 5126, 'count': elements_count, 'type': 'VEC2'}
+            this_object_accessor_color_0: dict = {'bufferView': this_color_0, 'componentType': 5126, 'count': elements_count, 'type': 'VEC3'}
             this_object_accessor_vertex_indices: dict = {'bufferView': this_indices, 'componentType': 5123, 'count': elements_count, 'type': 'SCALAR'}
             this_object_accessor_normal_indices: dict = {'bufferView': this_indices, 'componentType': 5123, 'count': elements_count, 'type': 'SCALAR'}
 
@@ -66,6 +66,8 @@ class NewModel:
             gltf_descriptor_data.update(meshes)
             gltf_to_binary_data.update(buffers_to_compile_binary)
             gltf_accessors.update(this_accessor)
+            print(f'Accessor DATA: Vertices: {elements_count}')
+            print(f'OBJECT NUMBER {tmd_object_number}')
 
             this_meshes_index += 5
         
@@ -177,6 +179,10 @@ class NewModel:
 
         primitives_buffers_this_object = {'Buffers': join_single_array_block, 'BufferFullLength': length_object_array_block,
                                           'LengthEachArray': each_length_arrays, 'SequencedLenghts': sequenced_lengths}
+        
+        print(f'Lengths: Vertex: {length_object_vertices_array}, Normals: {length_object_normals_array}, UV: {length_object_uv_array}, Color: {length_object_color_array}, IndexVertices: {length_object_vertices_index_array}, IndexNormals: {length_object_normals_index_array}')
+        
+        print(f'Total Block Lenght: {length_object_array_block}')
 
         return primitives_buffers_this_object, total_primitives
     
@@ -226,10 +232,10 @@ class NewModel:
                            'u_0': u_0, 'v_0': v_0, 'u_1': u_1, 'v_1': v_1, 'u_2': u_2, 'v_2': v_2, 
                            'r0': r_0, 'g0': g_0, 'b0': b_0, 'r1': r_1, 'g1': g_1, 'b1': b_1, 'r2': r_2, 'g2': g_2, 'b2': b_2}
         
-        new_primitive_2 = {'vertex0': vertex_index_1, 'vertex1': vertex_index_2, 'vertex2': vertex_index_3, 
-                           'normal0': normal_index_1, 'normal1': normal_index_2, 'normal2': normal_index_3, 
-                           'u_0': u_1, 'v_0': v_1, 'u_1': u_2, 'v_1': v_2, 'u_2': u_3, 'v_2': v_3, 
-                           'r0': r_1, 'g0': g_1, 'b0': b_1, 'r1': r_2, 'g1': g_2, 'b1': b_2, 'r2': r_3, 'g2': g_3, 'b2': b_3}
+        new_primitive_2 = {'vertex0': vertex_index_0, 'vertex1': vertex_index_2, 'vertex2': vertex_index_3, 
+                           'normal0': normal_index_0, 'normal1': normal_index_2, 'normal2': normal_index_3, 
+                           'u_0': u_0, 'v_0': v_0, 'u_1': u_2, 'v_1': v_2, 'u_2': u_3, 'v_2': v_3, 
+                           'r0': r_0, 'g0': g_0, 'b0': b_0, 'r1': r_2, 'g1': g_2, 'b1': b_2, 'r2': r_3, 'g2': g_3, 'b2': b_3}
 
         return new_primitive_1, new_primitive_2
 
@@ -303,7 +309,7 @@ class NewModel:
         new_vertex_array.append(get_x_0)
         new_vertex_array.append(get_y_0)
         new_vertex_array.append(get_z_0)
-        get_vertex_0_bin = int.to_bytes(0, length=2, byteorder='little', signed=False)
+        get_vertex_0_bin = int.to_bytes(0, length=4, byteorder='little', signed=False)
 
         # Vertex 1 Properties and Array into Binary
         get_vertex_vectors_1 = vertex_array.get(f'Vertex_Number_{get_vertex_1}')
@@ -313,7 +319,7 @@ class NewModel:
         new_vertex_array.append(get_x_1)
         new_vertex_array.append(get_y_1)
         new_vertex_array.append(get_z_1)
-        get_vertex_1_bin = int.to_bytes(1, length=2, byteorder='little', signed=False)
+        get_vertex_1_bin = int.to_bytes(1, length=4, byteorder='little', signed=False)
 
         # Vertex 2 Properties and Array into Binary
         get_vertex_vectors_2 = vertex_array.get(f'Vertex_Number_{get_vertex_2}')
@@ -323,7 +329,7 @@ class NewModel:
         new_vertex_array.append(get_x_2)
         new_vertex_array.append(get_y_2)
         new_vertex_array.append(get_z_2)
-        get_vertex_2_bin = int.to_bytes(2, length=2, byteorder='little', signed=False)
+        get_vertex_2_bin = int.to_bytes(2, length=4, byteorder='little', signed=False)
 
         # Normal 0 Properties and Array into Binary
         get_normal_vectors_0 = normal_array.get(f'{f'Normal_Number_{get_normal_0}'}')
@@ -333,7 +339,7 @@ class NewModel:
         new_normal_array.append(get_n_x_0)
         new_normal_array.append(get_n_y_0)
         new_normal_array.append(get_n_z_0)
-        get_normal_0_bin = int.to_bytes(0, length=2, byteorder='little', signed=False)
+        get_normal_0_bin = int.to_bytes(0, length=4, byteorder='little', signed=False)
 
         # Normal 1 Properties and Array into Binary
         get_normal_vectors_1 = normal_array.get(f'{f'Normal_Number_{get_normal_1}'}')
@@ -343,7 +349,7 @@ class NewModel:
         new_normal_array.append(get_n_x_1)
         new_normal_array.append(get_n_y_1)
         new_normal_array.append(get_n_z_1)
-        get_normal_1_bin = int.to_bytes(1, length=2, byteorder='little', signed=False)
+        get_normal_1_bin = int.to_bytes(1, length=4, byteorder='little', signed=False)
 
         # Normal 2 Properties and Array into Binary
         get_normal_vectors_2 = normal_array.get(f'{f'Normal_Number_{get_normal_2}'}')
@@ -353,7 +359,7 @@ class NewModel:
         new_normal_array.append(get_n_x_2)
         new_normal_array.append(get_n_y_2)
         new_normal_array.append(get_n_z_2)
-        get_normal_2_bin = int.to_bytes(2, length=2, byteorder='little', signed=False)
+        get_normal_2_bin = int.to_bytes(2, length=4, byteorder='little', signed=False)
 
         # UV Data into Binary
         u_0_bin = struct.pack('<f', u_0)
@@ -378,13 +384,12 @@ class NewModel:
         calc_g_2 = struct.pack('<f', round(float(g_2 / 256), 12))
         calc_b_2 = struct.pack('<f', round(float(b_2 / 256), 12))
 
-        uv_attribute = [u_0_bin, v_0_bin, u_1_bin, v_1_bin, u_2_bin, v_2_bin]
-        color_attribute = [calc_r_0, calc_g_0, calc_b_0, calc_r_1, calc_g_1, calc_b_1, calc_r_2, calc_g_2, calc_b_2]
-
-        # Adding Pad Bytes to the end of the Vertex Index and Normal Index
+        # Adding Pad Bytes to the arrays which need it
         padding_value = b'\x00\x00'
-        vertex_index = [get_vertex_0_bin, get_vertex_1_bin, get_vertex_2_bin, padding_value]
-        normal_index = [get_normal_0_bin, get_normal_1_bin, get_normal_2_bin, padding_value]
+        vertex_index = [get_vertex_0_bin, get_vertex_1_bin, get_vertex_2_bin]
+        normal_index = [get_normal_0_bin, get_normal_1_bin, get_normal_2_bin]
+        uv_attribute = [u_0_bin, v_0_bin, u_1_bin, v_1_bin, u_2_bin, v_2_bin, padding_value, padding_value]
+        color_attribute = [calc_r_0, calc_g_0, calc_b_0, calc_r_1, calc_g_1, calc_b_1, calc_r_2, calc_g_2, calc_b_2]
 
         new_vertex_array_join = b''.join(new_vertex_array)
         new_normal_array_join = b''.join(new_normal_array)
@@ -395,5 +400,6 @@ class NewModel:
 
         this_primitive_single_buffer = [new_vertex_array_join, new_normal_array_join, uv_attribute_join, color_attribute_join, vertex_index_join, normal_index_join]
 
+        print(len(vertex_index_join), len(normal_index_join))
         return this_primitive_single_buffer
 
