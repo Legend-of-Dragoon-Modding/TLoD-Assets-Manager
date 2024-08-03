@@ -34,9 +34,12 @@ class gltfFile:
     
     def convert_gltf(self) -> None:
         """This actually do the Conversion"""
-        descriptor_gltf = self.gltf_to_convert.get(f'Descriptor')
-        to_binary_buffers_gltf = self.gltf_to_convert.get(f'Buffers')
-        accessors_data_gltf = self.gltf_to_convert.get(f'Accessors')
+        total_objects_gltf = self.gltf_to_convert.get('ObjectsNumber')
+        meshes_gltf = self.gltf_to_convert.get('Meshes')
+        binary_buffers_gltf = self.gltf_to_convert.get('Buffers')
+        accessors_data_gltf = self.gltf_to_convert.get('Accessors')
+        buffersview_gltf = self.gltf_to_convert.get('BufferViews')
+        buffer_gltf_total_size = self.gltf_to_convert.get('BufferSizeTotal')
         
         # Setup an empty glTF File
         gltf_file = GLTF2()
@@ -50,20 +53,19 @@ class gltfFile:
         # Setup an Scene
         gltf_scene = Scene()
         gltf_scene.name = 'Scene'
-        get_total_number_nodes = len(descriptor_gltf)
-        for this_node in range(0, get_total_number_nodes):
+        for this_node in range(0, total_objects_gltf):
             gltf_scene.nodes.append(this_node)
         gltf_file.scenes.append(gltf_scene)
         
         # Setup Nodes
-        for this_node_number in range(0, get_total_number_nodes):
+        for this_node_number in range(0, total_objects_gltf):
             gltf_nodes = Node()
             gltf_nodes.mesh = this_node_number
             gltf_nodes.name =  f'{self.gltf_file_name}_ObjNum_{this_node_number}'
             gltf_file.nodes.append(gltf_nodes)
 
         # Setup Materials - HERE WE ARE IMPLEMENTING VERY BASIC MATERIALS (In future i hope implementing specific materials for each objects)
-        for this_object_material in range(0, get_total_number_nodes):
+        for this_object_material in range(0, total_objects_gltf):
             material_gltf = Material()
             material_gltf.doubleSided = True
             material_gltf.extensions = {'KHR_materials_specular': {'specularFactor': 0}, 
@@ -79,8 +81,8 @@ class gltfFile:
 
         # Setup Meshes (for each node, since TLoD use object by object Animation) -> And Primitives
         # Maybe i could add a single mesh and each primitives block is represented by an object? who knows
-        for this_gltf_mesh in descriptor_gltf:
-            get_this_object = descriptor_gltf.get(f'{this_gltf_mesh}')
+        for this_gltf_mesh in meshes_gltf:
+            get_this_object = meshes_gltf.get(f'{this_gltf_mesh}')
             change_name_gltf_object = this_gltf_mesh.replace('Object_Number_', f'{self.gltf_file_name}_ObjNum_')
             gltf_mesh = Mesh()
             gltf_mesh.name = change_name_gltf_object
@@ -97,8 +99,6 @@ class gltfFile:
         
         # Setup Accessors
         # POSITION=VEC3 ; NORMAL=VEC3 ; NORMAL=VEC2 ; COLOR_0=VEC3 ; indices=SCALAR
-        # TODO: I THINK I DO ANYTHING BUT A GOOD CALCULATION FOR accessor_gltf.count = get_accessor_data.get('count')
-        # ERROR: ACCESSOR_TOO_LONG -> Accessor (offset: %1, length: %2) does not fit referenced bufferView [%3] length %4.
         for this_object in accessors_data_gltf:
             current_accessors_arrays = accessors_data_gltf.get(f'{this_object}')
             for this_accessor in current_accessors_arrays:
@@ -110,75 +110,28 @@ class gltfFile:
                 accessor_gltf.type = get_accessor_data.get('type')
                 gltf_file.accessors.append(accessor_gltf)
         
-        # Setup BufferViews and Accessors
-        buffers_binary_final: list = []
-        byte_offset_previous = 0
-        for this_object in to_binary_buffers_gltf:
-            get_buffer_object = to_binary_buffers_gltf.get(f'{this_object}')
-            get_binary_data_buffer = get_buffer_object.get(f'Buffers')
-            get_buffer_full_length = get_buffer_object.get(f'BufferFullLength')
-            get_length_each_array = get_buffer_object.get(f'LengthEachArray') # This is each of the buffer length of bytes
-            get_length_sum_arrays = get_buffer_object.get(f'SequencedLenghts') # This is each of the summatory of previous lengths but only for this single object
-
-            vertex_buffer_gltf = BufferView()
-            vertex_buffer_gltf.buffer = 0
-            vertex_buffer_gltf.byteLength = get_length_each_array[0]
-            vertex_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[0]
-            vertex_buffer_gltf.target = 34962
-
-            normal_buffer_gltf = BufferView()
-            normal_buffer_gltf.buffer = 0
-            normal_buffer_gltf.byteLength = get_length_each_array[1]
-            normal_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[1]
-            normal_buffer_gltf.target = 34962
-
-            uv_buffer_gltf = BufferView()
-            uv_buffer_gltf.buffer = 0
-            uv_buffer_gltf.byteLength = get_length_each_array[2]
-            uv_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[2]
-            uv_buffer_gltf.target = 34962
-
-            color_buffer_gltf = BufferView()
-            color_buffer_gltf.buffer = 0
-            color_buffer_gltf.byteLength = get_length_each_array[3]
-            color_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[3]
-            color_buffer_gltf.target = 34962
-
-            ivertex_buffer_gltf = BufferView()
-            ivertex_buffer_gltf.buffer = 0
-            ivertex_buffer_gltf.byteLength = get_length_each_array[4]
-            ivertex_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[4]
-            ivertex_buffer_gltf.target = 34963
-
-            inormal_buffer_gltf = BufferView()
-            inormal_buffer_gltf.buffer = 0
-            inormal_buffer_gltf.byteLength = get_length_each_array[5]
-            inormal_buffer_gltf.byteOffset = byte_offset_previous + get_length_sum_arrays[5]
-            inormal_buffer_gltf.target = 34963
-
-            gltf_file.bufferViews.append(vertex_buffer_gltf)
-            gltf_file.bufferViews.append(normal_buffer_gltf)
-            gltf_file.bufferViews.append(uv_buffer_gltf)
-            gltf_file.bufferViews.append(color_buffer_gltf)
-            gltf_file.bufferViews.append(ivertex_buffer_gltf)
-            gltf_file.bufferViews.append(inormal_buffer_gltf)
-
-            buffers_binary_final.append(get_binary_data_buffer)
-
-            byte_offset_previous += get_buffer_full_length
+        # Setup BufferViews
+        for this_object in buffersview_gltf:
+            this_bufferviews_in_object = buffersview_gltf.get(f'{this_object}')
+            for this_bufferview_data in this_bufferviews_in_object:
+                buffer_view = this_bufferviews_in_object.get(f'{this_bufferview_data}')
+                this_bufferview_gltf = BufferView()
+                this_bufferview_gltf.buffer = buffer_view.get(f'buffer')
+                this_bufferview_gltf.byteLength = buffer_view.get(f'byteLength')
+                this_bufferview_gltf.byteOffset = buffer_view.get(f'byteOffset')
+                this_bufferview_gltf.target = buffer_view.get(f'target')
+                gltf_file.bufferViews.append(this_bufferview_gltf)
 
         # Creating Binary Buffers in GLB Binary Format
-        buffer_binary_joined_final = b''.join(buffers_binary_final)
-        length_buffer_binary = len(buffer_binary_joined_final)
         
         binary_file_name = f'{self.gltf_file_name}_buffers.bin'
         buffer_glb_gltf = Buffer()
-        buffer_glb_gltf.byteLength = length_buffer_binary
+        buffer_glb_gltf.byteLength = buffer_gltf_total_size
         buffer_glb_gltf.uri = binary_file_name
         gltf_file.buffers.append(buffer_glb_gltf)
 
         gltf_file.save_json(f'{self.gltf_deploy_path}.gltf')
 
-        with open(f'{self.gltf_deploy_path}_buffers.bin', 'wb') as gltf_binary_buffer:
+        """with open(f'{self.gltf_deploy_path}_buffers.bin', 'wb') as gltf_binary_buffer:
             gltf_binary_buffer.write(buffer_binary_joined_final)
-            gltf_binary_buffer.close()
+            gltf_binary_buffer.close()"""

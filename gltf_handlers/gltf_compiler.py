@@ -20,17 +20,20 @@ class NewModel:
         self.model_arrager()
     
     def model_arrager(self) -> None:
+        gltf_total_objects: int = 0
         gltf_meshes_data: dict = {}
         gltf_to_binary_data: dict = {}
         gltf_accessors: dict = {}
+        gltf_buffersview: dict = {}
 
         tmd_model_data = self.model_data.get(f'Converted_Data')
         tmd_model_info = self.model_data.get(f'Data_Table')
         tmd_model_objects_number = len(self.model_data.get(f'Data_Table'))
 
         this_data_index = 0 # This Value actually is the number of position in the arrage in Meshes Primitives and Accessors
+        buffer_size = 0
         for tmd_object_number in range(0, tmd_model_objects_number):
-            print(f'OBJECT NUMBER {tmd_object_number}')
+            #print(f'OBJECT NUMBER {tmd_object_number}')
             get_this_object = tmd_model_data.get(f'Object_Number_{tmd_object_number}')
             get_this_info = tmd_model_info.get(f'Object_Number_{tmd_object_number}')
             get_vertex_this_object = get_this_object.get(f'Vertex')
@@ -41,30 +44,46 @@ class NewModel:
                                                        object_info=get_this_info)
             
             object_buffers = object_converted.get('CompiledBuffers')
-            element_counts = object_converted.get('Counts')
+            this_buffer_array_size = len(object_buffers)
+
+            elements_counts = object_converted.get('Counts')
+
+            elements_sizes = object_converted.get('BuffersSizes')
+
+            current_bufferview = self.generate_bufferview(bv_current_size_array=buffer_size, bv_elements_sizes=elements_sizes)
             
-            current_mesh = self.generate_mesh_data(current_index=this_data_index)
+            current_mesh = self.generate_mesh_data(current_index=this_data_index, current_object_number=tmd_object_number)
             
+            current_accesor = self.generate_accessor(current_index=this_data_index, current_object_number=tmd_object_number, mesh_element_count=elements_counts)
+
             buffers_to_compile_binary: dict = {f'Object_Number_{tmd_object_number}': object_buffers}
 
-            current_accesor = self.generate_accessor(current_index=this_data_index, current_object_number=tmd_object_number, mesh_element_count=element_counts)
+            buffers_view = {f'Object_Number_{tmd_object_number}': current_bufferview}
 
-            gltf_meshes_data.update(current_mesh)
+            mesh_data = {f'Object_Number_{tmd_object_number}': current_mesh}
+
+            gltf_meshes_data.update(mesh_data)
             gltf_to_binary_data.update(buffers_to_compile_binary)
             gltf_accessors.update(current_accesor)
-
-            #print(f'Accessor DATA: Vertices: {None}')
+            gltf_buffersview.update(buffers_view)
 
             this_data_index += 5
+            buffer_size += this_buffer_array_size
+            gltf_total_objects += 1
         
         del self.model_data
         del self.animation_data
         gc.collect()
         
-        self.gltf_format = {'Meshes': gltf_meshes_data, 'Buffers': gltf_to_binary_data, 'Accessors': gltf_accessors}
+        self.gltf_format = {'ObjectsNumber': gltf_total_objects, 'Meshes': gltf_meshes_data, 'Buffers': gltf_to_binary_data, 
+                            'Accessors': gltf_accessors, 'BufferViews': gltf_buffersview, 'BufferSizeTotal': buffer_size}
 
     def generate_mesh_data(self, current_index=int, current_object_number=int) -> dict:
-        mesh_data: dict = {}
+        """
+        Generate Mesh Data:\n
+        Generate the Mesh Data for glTF based in Index for Accessors
+        """
+        this_gltf_primitive: dict = {}
         this_position = current_index
         this_normal = current_index + 1
         this_texcoord = current_index + 2
@@ -75,10 +94,8 @@ class NewModel:
         this_attributes: dict = {'POSITION': this_position, 'NORMAL': this_normal,
                                     'TEXCOORD_0': this_texcoord, 'COLOR_0': this_color_0}
         this_gltf_primitive: dict = {'attributes': this_attributes, 'indices': this_indices, 'material': this_material}
-        
-        mesh_data = {f'Object_Number_{current_object_number}': this_gltf_primitive}
 
-        return mesh_data
+        return this_gltf_primitive
 
     def generate_accessor(self, current_index=int, current_object_number=int, mesh_element_count=dict) -> dict:
         """
@@ -95,11 +112,12 @@ class NewModel:
         this_object_accessor_textcoord: dict = {'bufferView': current_index + 2, 'componentType': 5126, 'count': element_count, 'type': 'VEC2'}
         this_object_accessor_color_0: dict = {'bufferView': current_index + 3, 'componentType': 5126, 'count': element_count, 'type': 'VEC3'}
         this_object_accessor_vertex_indices: dict = {'bufferView': current_index + 4, 'componentType': 5123, 'count': element_count, 'type': 'SCALAR'}
+        this_object_accessor_normal_indices: dict = {'bufferView': current_index + 5, 'componentType': 5123, 'count': element_count, 'type': 'SCALAR'}
 
         this_accessor = {f'Object_Number_{current_object_number}':
                          {'AccPos': this_object_accessor_position, 'AccNor': this_object_accessor_normal, 
                           'AccTex': this_object_accessor_textcoord, 'AccCol': this_object_accessor_color_0, 
-                          'AccInd': this_object_accessor_vertex_indices}}
+                          'AccVInd': this_object_accessor_vertex_indices, 'AccNInd': this_object_accessor_normal_indices}}
         
         return this_accessor
 
@@ -223,36 +241,42 @@ class NewModel:
             padding_multiply = self.closest_multiple(mul=final_vertex_b_len, base=4)
             add_this_pad = [final_vertex_buffer, pad_value * padding_multiply]
             final_vertex_buffer = b''.join(add_this_pad)
+            final_vertex_b_len = len(final_vertex_buffer)
             print("Adding PAD to Vertex Array")
         
         if self.check_if_multiple(mul=final_normal_b_len, base=4):
             padding_multiply = self.closest_multiple(mul=final_normal_b_len, base=4)
             add_this_pad = [final_normal_buffer, pad_value * padding_multiply]
             final_normal_buffer = b''.join(add_this_pad)
+            final_normal_b_len = len(final_normal_buffer)
             print("Adding PAD to Normal Array")
         
         if self.check_if_multiple(mul=final_uv_b_len, base=4):
             padding_multiply = self.closest_multiple(mul=final_uv_b_len, base=4)
             add_this_pad = [final_uv_buffer, pad_value * padding_multiply]
             final_uv_buffer = b''.join(add_this_pad)
+            final_uv_b_len = len(final_uv_buffer)
             print("Adding PAD to UV Array")
         
         if self.check_if_multiple(mul=final_color_b_len, base=4):
             padding_multiply = self.closest_multiple(mul=final_color_b_len, base=4)
             add_this_pad = [final_color_buffer, pad_value * padding_multiply]
             final_color_buffer = b''.join(add_this_pad)
+            final_color_b_len = len(final_color_buffer)
             print("Adding PAD to Color Array")
 
         if self.check_if_multiple(mul=final_vindex_b_len, base=4):
             padding_multiply = self.closest_multiple(mul=final_vindex_b_len, base=4)
             add_this_pad = [final_vindex_buffer, pad_value * padding_multiply]
             final_vindex_buffer = b''.join(add_this_pad)
+            final_vindex_b_len = len(final_vindex_buffer)
             print("Adding PAD to Vertex Index Array")
 
         if self.check_if_multiple(mul=final_nindex_b_len, base=4):
             padding_multiply = self.closest_multiple(mul=final_nindex_b_len, base=4)
             add_this_pad = [final_nindex_buffer, pad_value * padding_multiply]
             final_nindex_buffer = b''.join(add_this_pad)
+            final_nindex_b_len = len(final_nindex_buffer)
             print("Adding PAD to Normal Index Array")
 
         buffers_compiled: list = [final_vertex_buffer, final_normal_buffer, final_uv_buffer, final_color_buffer, final_vindex_buffer, final_nindex_buffer]
@@ -260,8 +284,10 @@ class NewModel:
         """Counts will be in this order: VertexCount, NormalCount, Vec3Count, ScalarCount"""
         count_elements_list: list = [vertex_count, normal_count, element_count]
 
-        buffers_this_object = {'CompiledBuffers': final_buffers_compiled, 'Counts': count_elements_list}
         # Need to work on Elements offset to send it to the BufferView
+        buffer_element_sizes: list = [final_vertex_b_len, final_normal_b_len, final_uv_b_len, final_color_b_len, final_vindex_b_len, final_nindex_b_len]
+
+        buffers_this_object = {'CompiledBuffers': final_buffers_compiled, 'Counts': count_elements_list, 'BuffersSizes': buffer_element_sizes}
         
         return buffers_this_object
 
@@ -428,6 +454,33 @@ class NewModel:
         triangle_buffer = {'VertexIndex': final_vertex_index, 'NormalIndex': final_normal_index, 'UV': final_uv_array, 'RGBA': final_color_array}
 
         return triangle_buffer
+
+    def generate_bufferview(self, bv_current_size_array=int, bv_elements_sizes=list) -> dict:
+        object_buffer_view: dict = {}
+
+        internal_offset = bv_current_size_array
+        accessor_number = 0
+        for bv_element in bv_elements_sizes:
+            current_target = 0
+            if (accessor_number == 4) or (accessor_number == 5):
+                current_target = 34963
+            else:
+                current_target = 34962
+            
+            buffer = 0
+            byte_length = bv_element
+            byte_offset = internal_offset
+            target = current_target
+
+            this_buffer_view: dict = {f'BufferView_{accessor_number}': 
+                                      {'buffer': buffer, 'byteLength': byte_length, 'byteOffset': byte_offset, 'target': target}}
+
+            object_buffer_view.update(this_buffer_view)
+
+            internal_offset += bv_element
+            accessor_number += 1
+
+        return object_buffer_view
 
     def check_if_multiple(self, mul=int, base=int) -> bool:
         """
