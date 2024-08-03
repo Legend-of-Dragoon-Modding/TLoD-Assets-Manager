@@ -9,6 +9,7 @@ Copyright (C) 2024 DooMMetaL
 
 import gc
 import struct
+import math
 
 class NewModel:
     def __init__(self, model_data=dict, animation_data=dict | None, file_name=str) -> None:
@@ -29,7 +30,7 @@ class NewModel:
 
         this_data_index = 0 # This Value actually is the number of position in the arrage in Meshes Primitives and Accessors
         for tmd_object_number in range(0, tmd_model_objects_number):
-            #print(f'OBJECT NUMBER {tmd_object_number}')
+            print(f'OBJECT NUMBER {tmd_object_number}')
             get_this_object = tmd_model_data.get(f'Object_Number_{tmd_object_number}')
             get_this_info = tmd_model_info.get(f'Object_Number_{tmd_object_number}')
             get_vertex_this_object = get_this_object.get(f'Vertex')
@@ -39,11 +40,14 @@ class NewModel:
                                                        vertex_array=get_vertex_this_object, normal_array=get_normal_this_object, 
                                                        object_info=get_this_info)
             
+            object_buffers = object_converted.get('CompiledBuffers')
+            element_counts = object_converted.get('Counts')
+            
             current_mesh = self.generate_mesh_data(current_index=this_data_index)
             
-            buffers_to_compile_binary: dict = {f'Object_Number_{tmd_object_number}': None}
+            buffers_to_compile_binary: dict = {f'Object_Number_{tmd_object_number}': object_buffers}
 
-            current_accesor = self.generate_accessor(current_index=this_data_index, current_object_number=tmd_object_number, mesh_element_count=[1,2])
+            current_accesor = self.generate_accessor(current_index=this_data_index, current_object_number=tmd_object_number, mesh_element_count=element_counts)
 
             gltf_meshes_data.update(current_mesh)
             gltf_to_binary_data.update(buffers_to_compile_binary)
@@ -81,12 +85,16 @@ class NewModel:
         Generate Accessor:
         As the name states, will generate the Accessor data for each Mesh in the Scece.
         """
+        vertex_count = mesh_element_count[0]
+        normal_count = mesh_element_count[1]
+        element_count = mesh_element_count[2]
+
         this_accessor: dict = {}
-        this_object_accessor_position: dict = {'bufferView': current_index, 'componentType': 5126, 'count': None, 'type': 'VEC3'}
-        this_object_accessor_normal: dict = {'bufferView': current_index + 1, 'componentType': 5126, 'count': None, 'type': 'VEC3'}
-        this_object_accessor_textcoord: dict = {'bufferView': current_index + 2, 'componentType': 5126, 'count': None, 'type': 'VEC2'}
-        this_object_accessor_color_0: dict = {'bufferView': current_index + 3, 'componentType': 5126, 'count': None, 'type': 'VEC3'}
-        this_object_accessor_vertex_indices: dict = {'bufferView': current_index + 4, 'componentType': 5123, 'count': None, 'type': 'SCALAR'}
+        this_object_accessor_position: dict = {'bufferView': current_index, 'componentType': 5126, 'count': vertex_count, 'type': 'VEC3'}
+        this_object_accessor_normal: dict = {'bufferView': current_index + 1, 'componentType': 5126, 'count': normal_count, 'type': 'VEC3'}
+        this_object_accessor_textcoord: dict = {'bufferView': current_index + 2, 'componentType': 5126, 'count': element_count, 'type': 'VEC2'}
+        this_object_accessor_color_0: dict = {'bufferView': current_index + 3, 'componentType': 5126, 'count': element_count, 'type': 'VEC3'}
+        this_object_accessor_vertex_indices: dict = {'bufferView': current_index + 4, 'componentType': 5123, 'count': element_count, 'type': 'SCALAR'}
 
         this_accessor = {f'Object_Number_{current_object_number}':
                          {'AccPos': this_object_accessor_position, 'AccNor': this_object_accessor_normal, 
@@ -95,7 +103,7 @@ class NewModel:
         
         return this_accessor
 
-    def tmd_to_gltf_buffer(self, primitives_to_process=dict, vertex_array=dict, normal_array=dict, object_info=dict) -> None:
+    def tmd_to_gltf_buffer(self, primitives_to_process=dict, vertex_array=dict, normal_array=dict, object_info=dict) -> dict[bytes, list]:
         """
         Take TMD Data of a SINGLE Object from TMDs gather Vertices, Normals, UV, Color and Indices\n
         to generate Buffers for glTF Binary Format.\n
@@ -113,7 +121,7 @@ class NewModel:
         3 Colors: 1 VEC4 == 4 Floats 32 Bits and each Float is 4 Bytes long, so 4*4 = 16 Bytes each VEC4
         3 Indices: 1 SCALAR = Unsigned Integer 16 Bit each is 2 Bytes long, so 3*2 = 6 Bytes each SCALAR
         """
-        buffers_this_object: dict = {}
+        buffers_this_object: dict[bytes, list] = {}
 
         obj_vindex_buffer: list = [] # Came from TMD Primitive IndexVertex Array
         obj_nindex_buffer: list = [] # Came from TMD Primitive IndexNormal Array
@@ -124,8 +132,7 @@ class NewModel:
 
         vertex_count: int = 0
         normal_count: int = 0
-        single_element_count = 0
-        multi_element_count = 0
+        element_count = 0
         for current_primitive_tmd in primitives_to_process:
             this_primitive_data = primitives_to_process.get(f'{current_primitive_tmd}')
             for primitive_type in this_primitive_data:
@@ -156,8 +163,7 @@ class NewModel:
                     obj_color_buffer.append(buffer_0_rgba)
                     obj_color_buffer.append(buffer_1_rgba)
 
-                    single_element_count += 2
-                    multi_element_count += 6
+                    element_count += 6
                 
                 else:
                     create_buffer_3v = self.create_buffer_triangle(triangle_data=getting_data)
@@ -171,8 +177,7 @@ class NewModel:
                     obj_uv_buffer.append(buffer_3v_uv)
                     obj_color_buffer.append(buffer_3v_rgba)
 
-                    single_element_count += 1
-                    multi_element_count += 3
+                    element_count += 3
         
         vertex_count = object_info.get('VertexNumber')
         normal_count = object_info.get('NormalNumber')
@@ -199,8 +204,66 @@ class NewModel:
             obj_normal_buffer.append(get_z_n)
         
         # TODO: Now it's time to join
-        
+        final_vertex_buffer = b''.join(obj_vertex_buffer)
+        final_normal_buffer = b''.join(obj_normal_buffer)
+        final_uv_buffer = b''.join(obj_uv_buffer)
+        final_color_buffer = b''.join(obj_color_buffer)
+        final_vindex_buffer = b''.join(obj_vindex_buffer)
+        final_nindex_buffer = b''.join(obj_nindex_buffer)
 
+        final_vertex_b_len = len(final_vertex_buffer)
+        final_normal_b_len = len(final_normal_buffer)
+        final_uv_b_len = len(final_uv_buffer)
+        final_color_b_len = len(final_color_buffer)
+        final_vindex_b_len = len(final_vindex_buffer)
+        final_nindex_b_len = len(final_nindex_buffer)
+
+        pad_value = '\x00\x00\x00\x00'
+        if self.check_if_multiple(mul=final_vertex_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_vertex_b_len, base=4)
+            add_this_pad = [final_vertex_buffer, pad_value * padding_multiply]
+            final_vertex_buffer = b''.join(add_this_pad)
+            print("Adding PAD to Vertex Array")
+        
+        if self.check_if_multiple(mul=final_normal_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_normal_b_len, base=4)
+            add_this_pad = [final_normal_buffer, pad_value * padding_multiply]
+            final_normal_buffer = b''.join(add_this_pad)
+            print("Adding PAD to Normal Array")
+        
+        if self.check_if_multiple(mul=final_uv_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_uv_b_len, base=4)
+            add_this_pad = [final_uv_buffer, pad_value * padding_multiply]
+            final_uv_buffer = b''.join(add_this_pad)
+            print("Adding PAD to UV Array")
+        
+        if self.check_if_multiple(mul=final_color_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_color_b_len, base=4)
+            add_this_pad = [final_color_buffer, pad_value * padding_multiply]
+            final_color_buffer = b''.join(add_this_pad)
+            print("Adding PAD to Color Array")
+
+        if self.check_if_multiple(mul=final_vindex_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_vindex_b_len, base=4)
+            add_this_pad = [final_vindex_buffer, pad_value * padding_multiply]
+            final_vindex_buffer = b''.join(add_this_pad)
+            print("Adding PAD to Vertex Index Array")
+
+        if self.check_if_multiple(mul=final_nindex_b_len, base=4):
+            padding_multiply = self.closest_multiple(mul=final_nindex_b_len, base=4)
+            add_this_pad = [final_nindex_buffer, pad_value * padding_multiply]
+            final_nindex_buffer = b''.join(add_this_pad)
+            print("Adding PAD to Normal Index Array")
+
+        buffers_compiled: list = [final_vertex_buffer, final_normal_buffer, final_uv_buffer, final_color_buffer, final_vindex_buffer, final_nindex_buffer]
+        final_buffers_compiled = b''.join(buffers_compiled)
+        """Counts will be in this order: VertexCount, NormalCount, Vec3Count, ScalarCount"""
+        count_elements_list: list = [vertex_count, normal_count, element_count]
+
+        buffers_this_object = {'CompiledBuffers': final_buffers_compiled, 'Counts': count_elements_list}
+        # Need to work on Elements offset to send it to the BufferView
+        
+        return buffers_this_object
 
     def quad_to_tri(self, prim_data=dict) -> tuple[dict, dict]:
         """
@@ -384,7 +447,7 @@ class NewModel:
         Closest Multiple:\n
         Check the closest upper value taking in care a base number.
         """
-        multiple = int(round(mul / base) * 4)
+        multiple = int(math.ceil(mul / base) * base)
 
         return multiple
 
