@@ -14,7 +14,7 @@ Copyright (C) 2024 Monoxide
 
 """
 from deff_handlers import lmb_file, animated_tmd_file, static_tmd_file, sprite_file, cmb_file
-from gltf_handlers import NewModel
+from gltf_handlers import NewGltfModel
 
 class DeffFile:
     def __init__(self, deff_sequence=dict, sc_folder=str) -> None:
@@ -109,7 +109,7 @@ class DeffFile:
             final_deff_data_animated_tmd = animated_tmd_file.TmdEmbeddedAnimation(animated_tmd_binary=deff_file_store)
         elif check_flags == 3:
             final_deff_static_tmd = static_tmd_file.StaticTmd(static_tmd_binary=deff_file_store)
-            convert_static_tmd = NewModel(model_data=final_deff_static_tmd.processed_static_tmd_model, animation_data=None)
+            convert_static_tmd = NewGltfModel(model_data=final_deff_static_tmd.processed_static_tmd_model, animation_data=None)
         elif check_flags == 4:
             """TODO: inside the DEFF properties i need to write the type of simulation of particle by hand ¯\\_(ツ)_/¯"""
             final_sprite = sprite_file.Sprite(sprite_binary=deff_file_store, sprite_properties=deff_properties, parent_transforms=parent_transforms, all_particles_properties=all_properties)

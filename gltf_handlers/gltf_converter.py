@@ -81,13 +81,13 @@ class gltfFile:
 
         # Setup Meshes (for each node, since TLoD use object by object Animation) -> And Primitives
         # Maybe i could add a single mesh and each primitives block is represented by an object? who knows
+        current_mesh_number = 0
         for this_gltf_mesh in meshes_gltf:
             get_this_object = meshes_gltf.get(f'{this_gltf_mesh}')
-            change_name_gltf_object = this_gltf_mesh.replace('Object_Number_', f'{self.gltf_file_name}_ObjNum_')
-            gltf_mesh = Mesh()
-            gltf_mesh.name = change_name_gltf_object
-            gltf_primitive = Primitive()
             get_this_primitive_attributes = get_this_object.get('attributes')
+            gltf_mesh = Mesh()
+            gltf_mesh.name = f'{self.gltf_file_name}_ObjNum_{current_mesh_number}'
+            gltf_primitive = Primitive()
             gltf_primitive.attributes.POSITION = get_this_primitive_attributes.get('POSITION')
             gltf_primitive.attributes.NORMAL = get_this_primitive_attributes.get('NORMAL')
             gltf_primitive.attributes.TEXCOORD_0 = get_this_primitive_attributes.get('TEXCOORD_0')
@@ -96,9 +96,10 @@ class gltfFile:
             gltf_primitive.material = get_this_object.get('material')
             gltf_mesh.primitives.append(gltf_primitive)
             gltf_file.meshes.append(gltf_mesh)
+            current_mesh_number += 1
         
         # Setup Accessors
-        # POSITION=VEC3 ; NORMAL=VEC3 ; NORMAL=VEC2 ; COLOR_0=VEC3 ; indices=SCALAR
+        # POSITION=VEC3 ; NORMAL=VEC3 ; NORMAL=VEC2 ; COLOR_0=VEC3 ; index=SCALAR
         for this_object in accessors_data_gltf:
             current_accessors_arrays = accessors_data_gltf.get(f'{this_object}')
             for this_accessor in current_accessors_arrays:
@@ -132,6 +133,13 @@ class gltfFile:
 
         gltf_file.save_json(f'{self.gltf_deploy_path}.gltf')
 
-        """with open(f'{self.gltf_deploy_path}_buffers.bin', 'wb') as gltf_binary_buffer:
-            gltf_binary_buffer.write(buffer_binary_joined_final)
-            gltf_binary_buffer.close()"""
+        buffer_data_total: list = []
+        for current_object_buffer in binary_buffers_gltf:
+            get_buffer_data = binary_buffers_gltf.get(f'{current_object_buffer}')
+            buffer_data_total.append(get_buffer_data)
+        
+        final_buffer_data = b''.join(buffer_data_total)
+
+        with open(f'{self.gltf_deploy_path}_buffers.bin', 'wb') as gltf_binary_buffer:
+            gltf_binary_buffer.write(final_buffer_data)
+            gltf_binary_buffer.close()

@@ -136,9 +136,14 @@ class BinaryDataModel:
         """
         Convert Each Vertex Vector [X, Y, Z] and applying it's desired Scale\n(before this one of the last step, i change this right now)
         """
-        vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True) / 1000
-        vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True) / 1000
-        vector_z: float = int.from_bytes(v_block[4:6], 'little', signed=True) / 1000
+        if self.type_of_data == 'Normal':
+            vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True)
+            vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True)
+            vector_z: float = int.from_bytes(v_block[4:6], 'little', signed=True)
+        else:
+            vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True) / 1000
+            vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True) / 1000
+            vector_z: float = int.from_bytes(v_block[4:6], 'little', signed=True) / 1000
 
         return vector_x, vector_y, vector_z
     
@@ -659,7 +664,7 @@ class BinaryDataTexture:
                 current_clut = clut_data.get(f'CLUT_{clut_num}')
                 current_rgba = []
                 for current_pixel in image_data_itself:
-                    byte_pixel = current_clut[(byte*2):(byte*2+2)]
+                    byte_pixel = current_clut[(current_pixel*2):(current_pixel*2+2)]
                     current_rgba.append(byte_pixel)
                 joined_rgba = b''.join(current_rgba)
                 rgba_data_combined[f'IMAGE_{clut_num}'] = joined_rgba

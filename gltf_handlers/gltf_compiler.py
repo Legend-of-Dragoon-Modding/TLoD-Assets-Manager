@@ -10,9 +10,11 @@ Copyright (C) 2024 DooMMetaL
 import gc
 import struct
 import math
+import numpy
 
-class NewModel:
+class NewGltfModel:
     def __init__(self, model_data=dict, animation_data=dict | None, file_name=str) -> None:
+        """Create a glTF Model Object from TMD Files"""
         self.model_data = model_data
         self.animation_data = animation_data
         self.file_name = file_name
@@ -20,6 +22,10 @@ class NewModel:
         self.model_arrager()
     
     def model_arrager(self) -> None:
+        """
+        Model Arrager: \n
+        Arrage Model data to fit into glTF file format
+        """
         gltf_total_objects: int = 0
         gltf_meshes_data: dict = {}
         gltf_to_binary_data: dict = {}
@@ -33,7 +39,7 @@ class NewModel:
         this_data_index = 0 # This Value actually is the number of position in the arrage in Meshes Primitives and Accessors
         buffer_size = 0
         for tmd_object_number in range(0, tmd_model_objects_number):
-            #print(f'OBJECT NUMBER {tmd_object_number}')
+            print(f'OBJECT NUMBER {tmd_object_number}')
             get_this_object = tmd_model_data.get(f'Object_Number_{tmd_object_number}')
             get_this_info = tmd_model_info.get(f'Object_Number_{tmd_object_number}')
             get_vertex_this_object = get_this_object.get(f'Vertex')
@@ -88,12 +94,13 @@ class NewModel:
         this_normal = current_index + 1
         this_texcoord = current_index + 2
         this_color_0 = current_index + 3
-        this_indices = current_index + 4
+        this_vertex_indices = current_index + 4
         this_material = current_object_number
+
 
         this_attributes: dict = {'POSITION': this_position, 'NORMAL': this_normal,
                                     'TEXCOORD_0': this_texcoord, 'COLOR_0': this_color_0}
-        this_gltf_primitive: dict = {'attributes': this_attributes, 'indices': this_indices, 'material': this_material}
+        this_gltf_primitive: dict = {'attributes': this_attributes, 'indices': this_vertex_indices, 'material': this_material}
 
         return this_gltf_primitive
 
@@ -109,15 +116,14 @@ class NewModel:
         this_accessor: dict = {}
         this_object_accessor_position: dict = {'bufferView': current_index, 'componentType': 5126, 'count': vertex_count, 'type': 'VEC3'}
         this_object_accessor_normal: dict = {'bufferView': current_index + 1, 'componentType': 5126, 'count': normal_count, 'type': 'VEC3'}
-        this_object_accessor_textcoord: dict = {'bufferView': current_index + 2, 'componentType': 5126, 'count': element_count, 'type': 'VEC2'}
-        this_object_accessor_color_0: dict = {'bufferView': current_index + 3, 'componentType': 5126, 'count': element_count, 'type': 'VEC3'}
+        this_object_accessor_textcoord: dict = {'bufferView': current_index + 2, 'componentType': 5126, 'count': vertex_count, 'type': 'VEC2'}
+        this_object_accessor_color_0: dict = {'bufferView': current_index + 3, 'componentType': 5126, 'count': vertex_count, 'type': 'VEC4'}
         this_object_accessor_vertex_indices: dict = {'bufferView': current_index + 4, 'componentType': 5123, 'count': element_count, 'type': 'SCALAR'}
-        this_object_accessor_normal_indices: dict = {'bufferView': current_index + 5, 'componentType': 5123, 'count': element_count, 'type': 'SCALAR'}
 
         this_accessor = {f'Object_Number_{current_object_number}':
                          {'AccPos': this_object_accessor_position, 'AccNor': this_object_accessor_normal, 
                           'AccTex': this_object_accessor_textcoord, 'AccCol': this_object_accessor_color_0, 
-                          'AccVInd': this_object_accessor_vertex_indices, 'AccNInd': this_object_accessor_normal_indices}}
+                          'AccVInd': this_object_accessor_vertex_indices}}
         
         return this_accessor
 
@@ -141,16 +147,40 @@ class NewModel:
         """
         buffers_this_object: dict[bytes, list] = {}
 
+        obj_vertex_buffer: list = [] # Came from the Original TMD Vertex Array
+        obj_normal_buffer: list = [] # Came from TMD Normal Array [Index are not used, use Normal array instead]
         obj_vindex_buffer: list = [] # Came from TMD Primitive IndexVertex Array
-        obj_nindex_buffer: list = [] # Came from TMD Primitive IndexNormal Array
         obj_uv_buffer: list = [] # Came from TMD Primitive UV Array
         obj_color_buffer: list = [] # Came from TMD Primitive Color Array
-        obj_vertex_buffer: list = [] # Came from the Original TMD Vertex Array
-        obj_normal_buffer: list = [] # Came from the Original TMD Normal Array
 
         vertex_count: int = 0
         normal_count: int = 0
-        element_count = 0
+
+        vertex_count = object_info.get('VertexNumber')
+        normal_count = object_info.get('NormalNumber')
+        # With this hacky thing i avoid having 0 normals at Normal Count... Sorry Monoxide :')
+        # TODO: WHAT's GOING ON WITH THIS SHITTY NORMALS???
+        if normal_count != vertex_count:
+            normal_count = vertex_count
+        
+        for vertex in vertex_array:
+            get_this_vertex = vertex_array.get(f'{vertex}')
+            vertex_array_0_32bit = numpy.array([get_this_vertex.get('VecX'), get_this_vertex.get('VecY'), get_this_vertex.get('VecZ')], dtype="float32")
+            vertex_array_0_bin = vertex_array_0_32bit.tobytes()
+            obj_vertex_buffer.append(vertex_array_0_bin)
+        
+        for normal in normal_array:
+            get_this_normal = normal_array.get(f'{normal}')
+            normal_array_0_32bit = numpy.array([(get_this_normal.get('VecX') / 4096), get_this_normal.get('VecY') / 4096, get_this_normal.get('VecZ') / 4096], dtype="float32")
+            normal_array_0_bin = normal_array_0_32bit.tobytes()
+            obj_normal_buffer.append(normal_array_0_bin)
+        
+        if len(obj_normal_buffer) < vertex_count:
+            obj_normal_buffer = obj_normal_buffer[0:1] * vertex_count
+ 
+        self.vertex_index_this_obj: list = []
+        self.vertex_uv_this_obj: dict = {}
+        self.vertex_color_this_obj: dict = {}
         for current_primitive_tmd in primitives_to_process:
             this_primitive_data = primitives_to_process.get(f'{current_primitive_tmd}')
             for primitive_type in this_primitive_data:
@@ -159,133 +189,114 @@ class NewModel:
                     two_triangles = self.quad_to_tri(prim_data=getting_data)
                     triangle_0 = two_triangles[0]
                     triangle_1 = two_triangles[1]
-                    create_buffer_0 = self.create_buffer_triangle(triangle_data=triangle_0)
-                    create_buffer_1 = self.create_buffer_triangle(triangle_data=triangle_1)
-
-                    buffer_0_vi = create_buffer_0.get('VertexIndex')
-                    buffer_0_ni = create_buffer_0.get('NormalIndex')
-                    buffer_0_uv = create_buffer_0.get('UV')
-                    buffer_0_rgba = create_buffer_0.get('RGBA')
-
-                    buffer_1_vi = create_buffer_1.get('VertexIndex')
-                    buffer_1_ni = create_buffer_1.get('NormalIndex')
-                    buffer_1_uv = create_buffer_1.get('UV')
-                    buffer_1_rgba = create_buffer_1.get('RGBA')
-
-                    obj_vindex_buffer.append(buffer_0_vi)
-                    obj_vindex_buffer.append(buffer_1_vi)
-                    obj_nindex_buffer.append(buffer_0_ni)
-                    obj_nindex_buffer.append(buffer_1_ni)
-                    obj_uv_buffer.append(buffer_0_uv)
-                    obj_uv_buffer.append(buffer_1_uv)
-                    obj_color_buffer.append(buffer_0_rgba)
-                    obj_color_buffer.append(buffer_1_rgba)
-
-                    element_count += 6
-                
+                    self.create_buffer_triangle(triangle_data=triangle_0)
+                    self.create_buffer_triangle(triangle_data=triangle_1)
                 else:
-                    create_buffer_3v = self.create_buffer_triangle(triangle_data=getting_data)
-                    buffer_3v_vi = create_buffer_3v.get('VertexIndex')
-                    buffer_3v_ni = create_buffer_3v.get('NormalIndex')
-                    buffer_3v_uv = create_buffer_3v.get('UV')
-                    buffer_3v_rgba = create_buffer_3v.get('RGBA')
+                    self.create_buffer_triangle(triangle_data=getting_data)
+        
+        vertex_index_count = 0
+        for this_vertex_index in self.vertex_index_this_obj:
+            # Convert the Vertex Indices as SCALAR [Unsigned INT 16 Bit] - Vertex Index
+            vi_0_binary = int.to_bytes(this_vertex_index[0], length=2, byteorder='little', signed=False)
+            vi_1_binary = int.to_bytes(this_vertex_index[1], length=2, byteorder='little', signed=False)
+            vi_2_binary = int.to_bytes(this_vertex_index[2], length=2, byteorder='little', signed=False)
+            vertex_index_array = [vi_0_binary, vi_1_binary, vi_2_binary]
+            final_vertex_index = b''.join(vertex_index_array)
+            obj_vindex_buffer.append(final_vertex_index)
+            vertex_index_count += 3
+        
+        length_vertex_uv_obj = len(self.vertex_uv_this_obj)
+        init_uv_list = [None] * length_vertex_uv_obj
+        for this_vertex_uv in self.vertex_uv_this_obj:
+            # Convert the UV Data into VEC2 [32 Bit Float]
+            get_uv = self.vertex_uv_this_obj.get(f'{this_vertex_uv}')
+            convert_index_int = int(this_vertex_uv)
+            u_32bit = numpy.array([get_uv[0]], dtype="float32")
+            v_32bit = numpy.array([get_uv[1]], dtype="float32")
+            u_bin = u_32bit.tobytes()
+            v_bin = v_32bit.tobytes()
+            uv_bin = [u_bin, v_bin]
+            join_uv = b''.join(uv_bin)
+            init_uv_list[convert_index_int] = join_uv
+        obj_uv_buffer = init_uv_list
+        
+        length_vertex_color_obj = len(self.vertex_color_this_obj)
+        init_color_list = [None] * length_vertex_color_obj
+        for this_vertex_color in self.vertex_color_this_obj:
+            # Convert the Color Data into VEC4 [32 Bit Float]
+            get_color = self.vertex_color_this_obj.get(f'{this_vertex_color}')
+            convert_color_index_int = int(this_vertex_color)
+            r_32bit = numpy.array([get_color[0]], dtype="float32")
+            g_32bit = numpy.array([get_color[1]], dtype="float32")
+            b_32bit = numpy.array([get_color[2]], dtype="float32")
+            alpha_32bit = numpy.array([1.0], dtype="float32")
+            r_bin = r_32bit.tobytes()
+            g_bin = g_32bit.tobytes()
+            b_bin = b_32bit.tobytes()
+            alpha_bin = alpha_32bit.tobytes()
+            rgb_bin = [r_bin, g_bin, b_bin, alpha_bin]
+            join_rgba = b''.join(rgb_bin)
+            init_color_list[convert_color_index_int] = join_rgba
+        obj_color_buffer = init_color_list
 
-                    obj_vindex_buffer.append(buffer_3v_vi)
-                    obj_nindex_buffer.append(buffer_3v_ni)
-                    obj_uv_buffer.append(buffer_3v_uv)
-                    obj_color_buffer.append(buffer_3v_rgba)
-
-                    element_count += 3
-        
-        vertex_count = object_info.get('VertexNumber')
-        normal_count = object_info.get('NormalNumber')
-        # With this hacky thing i avoid having 0 normals at Normal Count... Sorry Monoxide :')
-        if normal_count == 0:
-            normal_count = 1
-        
-        for vertex in vertex_array:
-            get_this_vertex = vertex_array.get(f'{vertex}')
-            get_x_v = struct.pack('<f', get_this_vertex.get('VecX'))
-            get_y_v = struct.pack('<f', get_this_vertex.get('VecY'))
-            get_z_v = struct.pack('<f', get_this_vertex.get('VecZ'))
-            obj_vertex_buffer.append(get_x_v)
-            obj_vertex_buffer.append(get_y_v)
-            obj_vertex_buffer.append(get_z_v)
-        
-        for normal in normal_array:
-            get_this_normal = normal_array.get(f'{normal}')
-            get_x_n = struct.pack('<f', get_this_normal.get('VecX'))
-            get_y_n = struct.pack('<f', get_this_normal.get('VecY'))
-            get_z_n = struct.pack('<f', get_this_normal.get('VecZ'))
-            obj_normal_buffer.append(get_x_n)
-            obj_normal_buffer.append(get_y_n)
-            obj_normal_buffer.append(get_z_n)
-        
-        # TODO: Now it's time to join
+        # Joining the data
         final_vertex_buffer = b''.join(obj_vertex_buffer)
         final_normal_buffer = b''.join(obj_normal_buffer)
         final_uv_buffer = b''.join(obj_uv_buffer)
         final_color_buffer = b''.join(obj_color_buffer)
         final_vindex_buffer = b''.join(obj_vindex_buffer)
-        final_nindex_buffer = b''.join(obj_nindex_buffer)
 
         final_vertex_b_len = len(final_vertex_buffer)
         final_normal_b_len = len(final_normal_buffer)
         final_uv_b_len = len(final_uv_buffer)
         final_color_b_len = len(final_color_buffer)
         final_vindex_b_len = len(final_vindex_buffer)
-        final_nindex_b_len = len(final_nindex_buffer)
 
-        pad_value = '\x00\x00\x00\x00'
-        if self.check_if_multiple(mul=final_vertex_b_len, base=4):
+        pad_value = b'\x00\x00\x00\x00'
+        pad_value_short = b'\x00'
+
+        if self.check_if_multiple(mul=final_vertex_b_len, base=4) == False:
             padding_multiply = self.closest_multiple(mul=final_vertex_b_len, base=4)
             add_this_pad = [final_vertex_buffer, pad_value * padding_multiply]
             final_vertex_buffer = b''.join(add_this_pad)
             final_vertex_b_len = len(final_vertex_buffer)
             print("Adding PAD to Vertex Array")
         
-        if self.check_if_multiple(mul=final_normal_b_len, base=4):
+        if self.check_if_multiple(mul=final_normal_b_len, base=4) == False:
             padding_multiply = self.closest_multiple(mul=final_normal_b_len, base=4)
             add_this_pad = [final_normal_buffer, pad_value * padding_multiply]
             final_normal_buffer = b''.join(add_this_pad)
             final_normal_b_len = len(final_normal_buffer)
             print("Adding PAD to Normal Array")
         
-        if self.check_if_multiple(mul=final_uv_b_len, base=4):
+        if self.check_if_multiple(mul=final_uv_b_len, base=4) == False:
             padding_multiply = self.closest_multiple(mul=final_uv_b_len, base=4)
             add_this_pad = [final_uv_buffer, pad_value * padding_multiply]
             final_uv_buffer = b''.join(add_this_pad)
             final_uv_b_len = len(final_uv_buffer)
             print("Adding PAD to UV Array")
         
-        if self.check_if_multiple(mul=final_color_b_len, base=4):
+        if self.check_if_multiple(mul=final_color_b_len, base=4) == False:
             padding_multiply = self.closest_multiple(mul=final_color_b_len, base=4)
             add_this_pad = [final_color_buffer, pad_value * padding_multiply]
             final_color_buffer = b''.join(add_this_pad)
             final_color_b_len = len(final_color_buffer)
             print("Adding PAD to Color Array")
 
-        if self.check_if_multiple(mul=final_vindex_b_len, base=4):
+        if self.check_if_multiple(mul=final_vindex_b_len, base=4) == False:
             padding_multiply = self.closest_multiple(mul=final_vindex_b_len, base=4)
-            add_this_pad = [final_vindex_buffer, pad_value * padding_multiply]
+            add_this_pad = [final_vindex_buffer, pad_value_short * padding_multiply]
             final_vindex_buffer = b''.join(add_this_pad)
             final_vindex_b_len = len(final_vindex_buffer)
             print("Adding PAD to Vertex Index Array")
 
-        if self.check_if_multiple(mul=final_nindex_b_len, base=4):
-            padding_multiply = self.closest_multiple(mul=final_nindex_b_len, base=4)
-            add_this_pad = [final_nindex_buffer, pad_value * padding_multiply]
-            final_nindex_buffer = b''.join(add_this_pad)
-            final_nindex_b_len = len(final_nindex_buffer)
-            print("Adding PAD to Normal Index Array")
-
-        buffers_compiled: list = [final_vertex_buffer, final_normal_buffer, final_uv_buffer, final_color_buffer, final_vindex_buffer, final_nindex_buffer]
+        buffers_compiled: list = [final_vertex_buffer, final_normal_buffer, final_uv_buffer, final_color_buffer, final_vindex_buffer]
         final_buffers_compiled = b''.join(buffers_compiled)
         """Counts will be in this order: VertexCount, NormalCount, Vec3Count, ScalarCount"""
-        count_elements_list: list = [vertex_count, normal_count, element_count]
+        count_elements_list: list = [vertex_count, normal_count, vertex_index_count]
 
         # Need to work on Elements offset to send it to the BufferView
-        buffer_element_sizes: list = [final_vertex_b_len, final_normal_b_len, final_uv_b_len, final_color_b_len, final_vindex_b_len, final_nindex_b_len]
+        buffer_element_sizes: list = [final_vertex_b_len, final_normal_b_len, final_uv_b_len, final_color_b_len, final_vindex_b_len]
 
         buffers_this_object = {'CompiledBuffers': final_buffers_compiled, 'Counts': count_elements_list, 'BuffersSizes': buffer_element_sizes}
         
@@ -331,19 +342,19 @@ class NewModel:
         g3 = prim_data.get('g3')
         b3 = prim_data.get('b3')
         
-        triangle_0 = {'vertex0': vertex_index_0, 'vertex1': vertex_index_1, 'vertex2': vertex_index_2,
-                      'normal0': normal_index_0, 'normal1': normal_index_1, 'normal2': normal_index_2, 
+        triangle_0 = {'vertex0': vertex_index_2, 'vertex1': vertex_index_1, 'vertex2': vertex_index_0,
+                      'normal0': normal_index_2, 'normal1': normal_index_1, 'normal2': normal_index_0, 
                       'u0': u0, 'v0': v0, 'u1': u1, 'v1': v1, 'u2': u2, 'v2': v2, 
                       'r0': r0, 'g0': g0, 'b0': b0, 'r1': r1, 'g1': g1, 'b1': b1, 'r2': r2, 'g2': g2, 'b2': b2}
         
-        triangle_1 = {'vertex0': vertex_index_0, 'vertex1': vertex_index_2, 'vertex2': vertex_index_3,
-                      'normal0': normal_index_0, 'normal1': normal_index_2, 'normal2': normal_index_3, 
-                      'u0': u0, 'v0': v0, 'u1': u2, 'v1': v2, 'u2': u3, 'v2': v3, 
-                      'r0': r0, 'g0': g0, 'b0': b0, 'r1': r2, 'g1': g2, 'b1': b2, 'r2': r3, 'g2': g3, 'b2': b3}
+        triangle_1 = {'vertex0': vertex_index_1, 'vertex1': vertex_index_2, 'vertex2': vertex_index_3,
+                      'normal0': normal_index_1, 'normal1': normal_index_2, 'normal2': normal_index_3, 
+                      'u0': u1, 'v0': v1, 'u1': u2, 'v1': v2, 'u2': u3, 'v2': v3, 
+                      'r0': r1, 'g0': g1, 'b0': b1, 'r1': r2, 'g1': g2, 'b1': b2, 'r2': r3, 'g2': g3, 'b2': b3}
 
         return triangle_0, triangle_1
 
-    def create_buffer_triangle(self, triangle_data=dict) -> dict:
+    def create_buffer_triangle(self, triangle_data=dict) -> None:
         """
         Create Buffer Triangle:\n
         will take a single Triangle Data to convert into Buffers,\n
@@ -352,15 +363,11 @@ class NewModel:
         """
         At the moment there is no value empty, so even if a triangle
         have no normal, uv or color, will be fill with default values
+        WARNING: USING THE SAME VERTEX INDEX FOR NORMAL, there is a difference???
         """
-        triangle_buffer: dict = {}
         vertex_index_0 = triangle_data.get('vertex0')
         vertex_index_1 = triangle_data.get('vertex1')
         vertex_index_2 = triangle_data.get('vertex2')
-
-        normal_index_0 = triangle_data.get('normal0')
-        normal_index_1 = triangle_data.get('normal1')
-        normal_index_2 = triangle_data.get('normal2')
 
         u0 = triangle_data.get('u0')
         v0 = triangle_data.get('v0')
@@ -372,24 +379,15 @@ class NewModel:
         r0 = triangle_data.get('r0')
         g0 = triangle_data.get('g0')
         b0 = triangle_data.get('b0')
-        alpha_0 = 1.0
+
         r1 = triangle_data.get('r1')
         g1 = triangle_data.get('g1')
         b1 = triangle_data.get('b1')
-        alpha_1 = 1.0
+
         r2 = triangle_data.get('r2')
         g2 = triangle_data.get('g2')
         b2 = triangle_data.get('b2')
-        alpha_2 = 1.0
 
-        """
-        If Normal is None, will be assigned 0 as the Index. 
-        In case that only exist one Normal, the other three will be assigned with the same
-        """
-        if normal_index_0 == None:
-            normal_index_0 = normal_index_1 = normal_index_2 = 0
-        elif (normal_index_0 != None) and (normal_index_2 == None):
-            normal_index_1 = normal_index_2 = normal_index_0
         
         """
         If UV Data is None, everything will be assigned with 0.0 UV Vector
@@ -408,61 +406,38 @@ class NewModel:
             g1 = g2 = g0
             b1 = b2 = b0
         
-        # Convert the Vertex Indices as SCALAR [Unsigned INT 16 Bit] - Vertex Index
-        vi_0_binary = int.to_bytes(vertex_index_0, length=2, byteorder='little', signed=False)
-        vi_1_binary = int.to_bytes(vertex_index_1, length=2, byteorder='little', signed=False)
-        vi_2_binary = int.to_bytes(vertex_index_2, length=2, byteorder='little', signed=False)
-        # Convert the Normal Indices as SCALAR [Unsigned INT 16 Bit] - Normal Index
-        ni_0_binary = int.to_bytes(normal_index_0, length=2, byteorder='little', signed=False)
-        ni_1_binary = int.to_bytes(normal_index_1, length=2, byteorder='little', signed=False)
-        ni_2_binary = int.to_bytes(normal_index_2, length=2, byteorder='little', signed=False)
 
-        # Convert the UV Data into VEC2 [32 Bit Float]
-        u0_bin = struct.pack('<f', u0)
-        v0_bin = struct.pack('<f', v0)
-        u1_bin = struct.pack('<f', u1)
-        v1_bin = struct.pack('<f', v1)
-        u2_bin = struct.pack('<f', u2)
-        v2_bin = struct.pack('<f', v2)
+        this_vertex_index_array = vertex_index_0, vertex_index_1, vertex_index_2
+        self.vertex_index_this_obj.append(this_vertex_index_array)
 
-        # Convert Color Data into VEC4 [32 Bit Float]
-        r0_bin = struct.pack('<f', r0)
-        g0_bin = struct.pack('<f', g0)
-        b0_bin = struct.pack('<f', b0)
-        alpha_0_bin = struct.pack('<f', alpha_0)
-        r1_bin = struct.pack('<f', r1)
-        g1_bin = struct.pack('<f', g1)
-        b1_bin = struct.pack('<f', b1)
-        alpha_1_bin = struct.pack('<f', alpha_1)
-        r2_bin = struct.pack('<f', r2)
-        g2_bin = struct.pack('<f', g2)
-        b2_bin = struct.pack('<f', b2)
-        alpha_2_bin = struct.pack('<f', alpha_2)
+        this_vertex_uv_0 = {f'{vertex_index_0}': [u0, v0]}
+        this_vertex_uv_1 = {f'{vertex_index_1}': [u1, v1]}
+        this_vertex_uv_2 = {f'{vertex_index_2}': [u2, v2]}
 
-        vertex_index_array = [vi_0_binary, vi_1_binary, vi_2_binary]
-        final_vertex_index = b''.join(vertex_index_array)
-        
-        normal_index_array = [ni_0_binary, ni_1_binary, ni_2_binary]
-        final_normal_index = b''.join(normal_index_array)
+        self.vertex_uv_this_obj.update(this_vertex_uv_0)
+        self.vertex_uv_this_obj.update(this_vertex_uv_1)
+        self.vertex_uv_this_obj.update(this_vertex_uv_2)
 
-        uv_array = [u0_bin, v0_bin, u1_bin, v1_bin, u2_bin, v2_bin]
-        final_uv_array = b''.join(uv_array)
+        this_vertex_color_0 = {f'{vertex_index_0}': [r0 / 256, g0 / 256, b0 / 256]}
+        this_vertex_color_1 = {f'{vertex_index_1}': [r1 / 256, g1 / 256, b1 / 256]}
+        this_vertex_color_2 = {f'{vertex_index_2}': [r2 / 256, g2 / 256, b2 / 256]}
 
-        color_array = [r0_bin, g0_bin, b0_bin, alpha_0_bin, r1_bin, g1_bin, b1_bin, alpha_1_bin, r2_bin, g2_bin, b2_bin, alpha_2_bin]
-        final_color_array = b''.join(color_array)
-
-        triangle_buffer = {'VertexIndex': final_vertex_index, 'NormalIndex': final_normal_index, 'UV': final_uv_array, 'RGBA': final_color_array}
-
-        return triangle_buffer
+        self.vertex_color_this_obj.update(this_vertex_color_0)
+        self.vertex_color_this_obj.update(this_vertex_color_1)
+        self.vertex_color_this_obj.update(this_vertex_color_2)
 
     def generate_bufferview(self, bv_current_size_array=int, bv_elements_sizes=list) -> dict:
+        """
+        Generate BufferView:\n
+        Generate BufferView Data from previous full size of array and each element size
+        """
         object_buffer_view: dict = {}
 
         internal_offset = bv_current_size_array
         accessor_number = 0
         for bv_element in bv_elements_sizes:
             current_target = 0
-            if (accessor_number == 4) or (accessor_number == 5):
+            if (accessor_number == 4):
                 current_target = 34963
             else:
                 current_target = 34962
@@ -488,10 +463,10 @@ class NewModel:
         Check if a value is multiple of base number.
         """
         checking_bool: bool = False
-        if mul % base:
-            True
+        if mul % base == 0:
+            checking_bool = True
         else:
-            False
+            checking_bool = False
 
         return checking_bool
     
@@ -500,7 +475,8 @@ class NewModel:
         Closest Multiple:\n
         Check the closest upper value taking in care a base number.
         """
-        multiple = int(math.ceil(mul / base) * base)
+        calculate_bigger = int(math.ceil(mul / base) * base)
+        multiple = calculate_bigger - mul
 
         return multiple
 
