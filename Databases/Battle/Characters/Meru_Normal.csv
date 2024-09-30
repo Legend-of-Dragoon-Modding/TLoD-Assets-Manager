@@ -1,5 +1,5 @@
-Texture,/characters/meru/textures/combat!
-Idle,/characters/meru/models/combat,32,/characters/meru/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/meru/textures/combat!,,,,,
+Idle,/characters/meru/models/combat,32,characters/meru/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Double Smack,/characters/meru/models/combat,32,None,None,4079,"[16, 17, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Hammer Spin,/characters/meru/models/combat,32,None,None,4080,"[16, 17, 18, 19, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Cool Boogie,/characters/meru/models/combat,32,None,None,4081,"[16, 17, 18, 19, 20, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"

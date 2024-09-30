@@ -1,12 +1,12 @@
-Dart,DRGN0,405,DRGN0,"[407,408,409,410,411,412,413,414,415,416,417,418,419,420,421]",None,None,406
-Albert,DRGN0,422,DRGN0,"[424,425,426,427,428,429,430,431,432]",None,None,423
-Lavitz Zackwell,DRGN0,433,DRGN0,"[435,436,437,438,439,440,441,442]",None,None,434
-Lavitz Normal,DRGN0,443,DRGN0,"[445,446,447,448,449,450,451,452,453,454]",None,None,444
-Miranda,DRGN0,455,DRGN0,"[457,458,459]",None,None,456
-Rose,DRGN0,460,DRGN0,"[462,463]",None,None,461
-Haschel,DRGN0,464,DRGN0,"[466,467]",None,None,465
-Kongol,DRGN0,468,DRGN0,"[470,471]",None,None,469
-Lavitz Hand,DRGN0,472,DRGN0,[475],None,None,473
+Dart,None,405,None,"[407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421]",None,None,406
+Albert,None,422,None,"[424, 425, 426, 427, 428, 429, 430, 431, 432]",None,None,423
+Lavitz Zackwell,None,433,None,"[435, 436, 437, 438, 439, 440, 441, 442]",None,None,434
+Lavitz Normal,None,443,None,"[445, 446, 447, 448, 449, 450, 451, 452, 453, 454]",None,None,444
+Miranda,None,455,None,"[457, 458, 459]",None,None,456
+Rose,None,460,None,"[462, 463]",None,None,461
+Haschel,None,464,None,"[466, 467]",None,None,465
+Kongol,None,468,None,"[470, 471]",None,None,469
+Lavitz Hand,None,472,None,[475],None,None,473
 Face Texture 1,None,None,None,None,None,None,476
 Face Texture 2,None,None,None,None,None,None,477
 Face Texture 3,None,None,None,None,None,None,478

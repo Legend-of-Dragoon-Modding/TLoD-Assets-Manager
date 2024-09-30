@@ -63,7 +63,7 @@ class Asset:
         normal_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Normal')
         primitive_data = binary_data_handler.BinaryDataModel(object_table=object_table_dict, binary_data=model_data_end, type_of_data='Primitive')
 
-        arrage_vnp_data = self.vnp_data_arrager(number_objects=number_objects_int, vertex_data=vertex_data.model_converted, normal_data=normal_data.model_converted, primitive_data=primitive_data.model_converted)
+        arrage_vnp_data = self.vnp_data_arrager(object_number=number_objects_int, vertex_data=vertex_data.model_converted, normal_data=normal_data.model_converted, primitive_data=primitive_data.model_converted)
 
         tmd_final_dict = {'Format': 'TMD_Standard', 'Data_Table': object_table_dict, 
                           'Converted_Data': arrage_vnp_data}

@@ -1,5 +1,5 @@
-Texture,/characters/shana/textures/combat!
-Idle,/characters/shana/models/combat,32,/characters/shana/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/shana/textures/combat!,,,,,
+Idle,/characters/shana/models/combat,32,characters/shana/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Attack,/characters/shana/models/combat,32,None,None,4047,"[16, 25, 35, 36, 39, 41, 47, 58, 59, 63]"
 Shana No addition 1,/characters/shana/models/combat,32,None,None,4048,"[35, 36, 39, 41, 47, 58, 59, 63]"
 Shana No addition 2,/characters/shana/models/combat,32,None,None,4049,"[35, 36, 39, 41, 47, 58, 59, 63]"

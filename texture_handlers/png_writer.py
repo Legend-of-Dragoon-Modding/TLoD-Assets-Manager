@@ -39,3 +39,7 @@ class PngFile:
             this_file = rgba_data.get(f'IMAGE_{current_file}')
             img = Image.frombytes('RGBA', (size_w, size_h), this_file)
             img.save(complete_path, format='png')
+
+
+if __name__ == '__main__':
+    new_png = PngFile(texture_data={}, file_deploy_path='', texture_type='TIM')

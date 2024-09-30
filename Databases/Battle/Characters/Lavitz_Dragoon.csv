@@ -1,2 +1,2 @@
-Texture,/characters/lavitz/textures/dragoon!
-Idle,/characters/lavitz/models/dragoon,32,/characters/lavitz/models/dragoon,"[0, 1, 14, 29]",None,None
+Texture,characters/lavitz/textures/dragoon!,,,,,
+Idle,/characters/lavitz/models/dragoon,32,characters/lavitz/models/dragoon,"[0, 1, 14, 29]",None,None

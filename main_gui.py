@@ -85,6 +85,8 @@ class MainWindow(QMainWindow):
         self.main_background_image = QWidget(self)
         self.main_background_image.setObjectName("BackgroundImageMain")
         self.setCentralWidget(self.main_background_image)
+        # Create Widgets Layout
+        self.main_buttons_layout = QGridLayout(self.main_background_image)
         # Buttons Creation
         self.configuration_button = QPushButton('CONFIG')
         self.about_button = QPushButton('About')
@@ -106,8 +108,11 @@ class MainWindow(QMainWindow):
         self.convert_submap_models_button.setToolTip('Convert Models and Textures from SubMaps TLoD')
         self.convert_texture_only_button.setToolTip('Convert Textures that are not associated directly to a Model in TLoD')
         self.convert_deff_button.setToolTip('Convert DEFF Files into a Single Scene')
-        # Create Widgets Layout
-        self.main_buttons_layout = QGridLayout(self.main_background_image)
+        # Set the Layout to place the objects in the Window
+        self.main_background_image.setLayout(self.main_buttons_layout)
+        # Configure Layout
+        self.main_buttons_layout.setColumnMinimumWidth(0, 25)
+        self.main_buttons_layout.setRowStretch(0, 100)
         # Add Widgets to the Layout
         self.main_buttons_layout.addWidget(self.convert_batttle_models_button,0,1)
         self.main_buttons_layout.addWidget(self.convert_submap_models_button,0,2)
@@ -115,13 +120,6 @@ class MainWindow(QMainWindow):
         self.main_buttons_layout.addWidget(self.convert_deff_button,2,2)
         self.main_buttons_layout.addWidget(self.configuration_button,2,0)
         self.main_buttons_layout.addWidget(self.about_button,3,0)
-        # Configure Layout
-        self.main_buttons_layout.setColumnMinimumWidth(0, 25)
-        self.main_buttons_layout.setRowStretch(0, 100)
-        self.main_buttons_layout.setHorizontalSpacing(200)
-        self.main_buttons_layout.setVerticalSpacing(200)
-        # Set the Layout to place the objects in the Window
-        self.main_background_image.setLayout(self.main_buttons_layout)
         # Pressing Buttons bindings
         self.configuration_button.clicked.connect(self.configure_tool_window)
         self.about_button.clicked.connect(self.about_asset_manager)
@@ -302,7 +300,9 @@ class MainWindow(QMainWindow):
         battle_conversion_window = BattleConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder)
     
     def submap_conversion_window(self):
-        submap_conversion_window = SubMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database)
+        sc_folder_get = self.init_config.get(f'SC_Folder')
+        deploy_folder = self.init_config.get(f'Deploy_Folder')
+        submap_conversion_window = SubMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder )
     
     def textonly_conversion_window(self):
         textonly_conversion_window = TextOnlyConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database)

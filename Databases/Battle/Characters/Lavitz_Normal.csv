@@ -1,5 +1,5 @@
-Texture,/characters/lavitz/textures/combat!
-Idle,/characters/lavitz/models/combat,32,/characters/lavitz/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/lavitz/textures/combat!,,,,,
+Idle,/characters/lavitz/models/combat,32,characters/lavitz/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Harpoon,/characters/lavitz/models/combat,32,None,None,4039,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Spinning Cane,/characters/lavitz/models/combat,32,None,None,4040,"[16, 17, 18, 19, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Rod Typhoon,/characters/lavitz/models/combat,32,None,None,4041,"[16, 17, 18, 19, 20, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"

@@ -140,7 +140,7 @@ class DatabaseHandler:
             if nested_parent_name == 'Characters':
                 this_inner_dict_nested: dict = {f'{nested_subparent_name}': {}}
                 """example of how this Dict how to looks like
-                {'Battle': {'Characters': {'Dart_Normal': {'idle': ModelFolder': 'path', 'ModelFile': 'n', 'PassiveFolder': 'path', 'PassiveFiles': 'files', 'AttackFolder': 'path', 'AttackFiles': 'files'}}}}"""
+                {'Battle': {'Characters': {'Dart_Normal': {'idle': ModelFolder': 'path', 'ModelFile': 'n', 'PassiveFolder': 'path', 'PassiveFiles': 'files', 'AttackFolder': 'path', 'AttackFiles': 'files', 'texture': 'file'}}}}"""
                 csv_nested_read: list[str] = []
                 with open(nested_path, 'r') as csv_nested_file:
                     # First i read the Custom CSV with a '!' as delimiter for Texture and main data (Since i don't like the idea of repeating the texture data over and over)
@@ -152,7 +152,7 @@ class DatabaseHandler:
                 # Set a single Texture for all the Models/Animations
                 texture_action_and_path = csv_nested_read[0].split(',')
                 texture_path = texture_action_and_path[1]
-                this_inner_dict_nested[f'{nested_subparent_name}'].update({'Texture': texture_path})
+                this_inner_dict_nested[f'{nested_subparent_name}'].update({'Texture': texture_path}) # TODO Remove this?
                 
                 # This is the Character Models/Animations data
                 rest_of_csv = csv_nested_read[1].strip().split('\n')
@@ -167,9 +167,11 @@ class DatabaseHandler:
                     attack_path = split_this_row[5]
                     attack_files = split_this_row[6].replace('-', ', ')
 
-                    object_dict_inner = {f'{action_name}':  {'ModelFolder': model_path, 'ModelFile': model_file, 
-                                         'PassiveFolder': passive_path, 'PassiveFiles': passive_files, 
-                                            'AttackFolder': attack_path, 'AttackFiles': attack_files}}
+                    object_dict_inner = {f'{action_name}': 
+                                         {'ModelFolder': model_path, 'ModelFile': model_file, 
+                                          'PassiveFolder': passive_path, 'PassiveFiles': passive_files, 
+                                          'AttackFolder': attack_path, 'AttackFiles': attack_files, 
+                                          'Textures': texture_path}}
                     this_inner_dict_nested[f'{nested_subparent_name}'].update(object_dict_inner)
                 database_to_process['Characters'].update(this_inner_dict_nested)
 
@@ -315,7 +317,7 @@ class DatabaseHandler:
 
     def handle_special_csv(self, custom_csv=str) -> list[str]:
         special_csv: list[str] = []
-        special_csv = custom_csv.split('!')
+        special_csv = custom_csv.split('!,,,,,')
         return special_csv
     
     def process_database_from_textonly(self, file_path_list=list[str]) -> dict:

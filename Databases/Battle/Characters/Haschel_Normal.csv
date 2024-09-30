@@ -1,5 +1,5 @@
-Texture,/characters/haschel/textures/combat!
-Idle,/characters/haschel/models/combat,32,/characters/haschel/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/haschel/textures/combat!,,,,,
+Idle,/characters/haschel/models/combat,32,characters/haschel/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Double Punch,/characters/haschel/models/combat,32,None,None,4063,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Ferry of Styx,/characters/haschel/models/combat,32,None,None,4064,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Summon 4 Gods,/characters/haschel/models/combat,32,None,None,4065,"[16, 17, 18, 19, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"

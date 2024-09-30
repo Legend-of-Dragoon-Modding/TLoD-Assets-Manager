@@ -1,9 +1,9 @@
 MaleVillager1,DRGN24.BIN/872,0," [1, 2]",DRGN24.BIN/872/textures/0
 MaleVillager2,DRGN24.BIN/872,33," [34, 35, 36, 37, 38]",DRGN24.BIN/872/textures/1
 OldMaleVillager1,DRGN24.BIN/872,66," [67, 68, 69, 70, 71]",DRGN24.BIN/872/textures/2
-Finial,DRGN24.BIN/872,99," [100]",DRGN24.BIN/872/textures/3
-StrangeGlow,DRGN24.BIN/872,132," [133]",DRGN24.BIN/872/textures/4
+Finial,DRGN24.BIN/872,99, [100],DRGN24.BIN/872/textures/3
+StrangeGlow,DRGN24.BIN/872,132, [133],DRGN24.BIN/872/textures/4
 BlueBirdRose,DRGN24.BIN/872,165," [166, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180]",DRGN24.BIN/872/textures/5
-Dart,DRGN24.BIN/872,198," [199, 200, 201, 202, 203, 204] # Using a DartDistortedTexture",DRGN24.BIN/872/textures/6
-Shana,DRGN24.BIN/872,231," [232, 233, 234, 235, 236] # For some reason Shana have no Texture assigned",DRGN24.BIN/872/textures/7
-DartsSack,DRGN24.BIN/872,264," [265]",DRGN24.BIN/872/textures/8
+Dart,DRGN24.BIN/872,198," [199, 200, 201, 202, 203, 204]",DRGN24.BIN/872/textures/6
+Shana,DRGN24.BIN/872,231," [232, 233, 234, 235, 236]",DRGN24.BIN/872/textures/7
+DartsSack,DRGN24.BIN/872,264, [265],DRGN24.BIN/872/textures/8

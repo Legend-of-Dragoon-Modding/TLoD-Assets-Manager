@@ -1,10 +1,10 @@
-Haschel,DRGN0,582,DRGN0,"[584,585,586,587]",None,None,583
-Gehrich Dying,DRGN0,588,DRGN0,"[590,591]",None,None,589
-Dart,DRGN0,592,DRGN0,"[594,595,596,597,598]",None,None,593
-Mappi Death,DRGN0,599,DRGN0,[601],None,None,600
-Albert,DRGN0,602,DRGN0,"[604,605,606,607,608]",None,None,603
-Shana,DRGN0,609,DRGN0,[611],None,None,610
-Meru,DRGN0,612,DRGN0,"[614,615]",None,None,613
-Kongol,DRGN0,616,DRGN0,"[618,619,620,621,622,623,624,625]",None,None,617
+Haschel,None,582,None,"[584, 585, 586, 587]",None,None,583
+Gehrich Dying,None,588,None,"[590, 591]",None,None,589
+Dart,None,592,None,"[594, 595, 596, 597, 598]",None,None,593
+Mappi Death,None,599,None,[601],None,None,600
+Albert,None,602,None,"[604, 605, 606, 607, 608]",None,None,603
+Shana,None,609,None,[611],None,None,610
+Meru,None,612,None,"[614, 615]",None,None,613
+Kongol,None,616,None,"[618, 619, 620, 621, 622, 623, 624, 625]",None,None,617
 Face Texture 1,None,None,None,None,None,None,626
 Face Texture 2,None,None,None,None,None,None,627

@@ -1,9 +1,9 @@
 Dart,DRGN21.BIN/176,0," [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 32]",DRGN21.BIN/176/textures/0
 Shana,DRGN21.BIN/176,33," [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]",DRGN21.BIN/176/textures/1
-Shana's Mother,DRGN21.BIN/176,66," [67, 68, 69, 70, 71, 72, 73, 74, 75]",DRGN21.BIN/176/textures/2
-Shana's Father,DRGN21.BIN/176,99," [100, 101, 102, 103, 104, 105, 106]",DRGN21.BIN/176/textures/3
+Shana Mother,DRGN21.BIN/176,66," [67, 68, 69, 70, 71, 72, 73, 74, 75]",DRGN21.BIN/176/textures/2
+Shana Father,DRGN21.BIN/176,99," [100, 101, 102, 103, 104, 105, 106]",DRGN21.BIN/176/textures/3
 Female Child Villager,DRGN21.BIN/176,132," [133, 134, 135]",DRGN21.BIN/176/textures/4
 Male Child Villager,DRGN21.BIN/176,165," [166, 167, 168]",DRGN21.BIN/176/textures/5
 Plos,DRGN21.BIN/176,198," [199, 200]",DRGN21.BIN/176/textures/6
-Strange Glow,DRGN21.BIN/176,231," [232]",DRGN21.BIN/176/textures/7
+Strange Glow,DRGN21.BIN/176,231, [232],DRGN21.BIN/176/textures/7
 Male Villager,DRGN21.BIN/176,264," [265, 266]",DRGN21.BIN/176/textures/8

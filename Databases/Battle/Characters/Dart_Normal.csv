@@ -1,5 +1,5 @@
-Texture,/characters/dart/textures/combat!
-Idle,/characters/dart/models/combat,32,/characters/dart/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/dart/textures/combat!,,,,,
+Idle,/characters/dart/models/combat,32,characters/dart/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Double Slash,/characters/dart/models/combat,32,None,None,4031,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Volcano,/characters/dart/models/combat,32,None,None,4032,"[16, 17, 18, 19, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Burning Rush,/characters/dart/models/combat,32,None,None,4033,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"

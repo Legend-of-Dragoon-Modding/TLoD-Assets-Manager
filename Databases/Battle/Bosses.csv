@@ -51,7 +51,7 @@ Firebird,3470,32,3470,"[0, 1]",3926,"[2, 16, 18, 19, 20, 21]",/monsters/333/text
 Volcano Ball (Firebird),3471,32,3471,"[0, 1]",3927,"[2, 16]",/monsters/334/textures/combat
 Grand Jewel,3472,32,3472,"[0, 1]",3928,"[16, 17, 18, 19, 20]",/monsters/335/textures/combat
 Virage 2,3473,32,3473,"[0, 1]",3929,"[2, 16, 21]",/monsters/336/textures/combat
-Kamuy Tree ,3476,32,3476,"[0, 1]",None,None,/monsters/339/textures/combat
+Kamuy Tree,3476,32,3476,"[0, 1]",None,None,/monsters/339/textures/combat
 Ghost Commander,3477,32,3477,"[0, 1, 8]",3933,"[2, 16, 17, 18, 19, 21, 25]",/monsters/340/textures/combat
 Ghost Knight (Ghost Commander),3478,32,3478,"[0, 1, 8]",3934,"[2, 16, 17, 19, 25]",/monsters/341/textures/combat
 Mazo,3479,32,3479,[0],3935,[16],/monsters/342/textures/combat
@@ -62,7 +62,7 @@ Windigo,3483,32,3483,"[0, 1, 10, 11, 8, 9]",3939,"[2, 20]",/monsters/346/texture
 SnowCannon (Windigo),3484,32,3484,"[0, 1]",3940,[16],/monsters/347/textures/combat
 Polter Armor,3486,32,3486,"[0, 1]",3942,"[16, 17, 18, 19, 25]",/monsters/349/textures/combat
 Divine Dragon (Mayfil Spirit),3489,32,3489,"[0, 1]",None,None,/monsters/352/textures/combat
-Regole (Mayfil Spirit) ,3490,32,3490,[0],None,None,/monsters/353/textures/combat
+Regole (Mayfil Spirit),3490,32,3490,[0],None,None,/monsters/353/textures/combat
 Feyrbrand (Mayfil Spirit),3491,32,3491,"[0, 1]",3947,[2],/monsters/354/textures/combat
 Melbu Frahma 1st,3492,32,3492,"[0, 1]",3948,[16],/monsters/355/textures/combat
 Tentacle (Melbu Frahma),3493,32,3493,"[0, 1, 8]",None,None,/monsters/356/textures/combat

@@ -13,13 +13,13 @@ Copyright (C) 2024 DooMMetaL
 """
 import sys
 import os
-import gc
-from PyQt6.QtWidgets import QApplication, QMainWindow, QStatusBar, QGridLayout, QWidget, QScrollBar, QTreeView, QListWidget, QGroupBox, QLabel, QPushButton
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QStatusBar, QGridLayout, QWidget, QScrollBar, QTreeView, 
+                             QListWidget, QGroupBox, QLabel, QPushButton, QCheckBox, QComboBox, QMessageBox, QProgressBar)
 from PyQt6.QtGui import QIcon, QKeySequence, QAction, QStandardItemModel, QStandardItem, QColor, QFont
-from PyQt6.QtCore import QAbstractItemModel, Qt
+from PyQt6.QtCore import QObject, Qt, QThread, pyqtSlot, pyqtSignal
 import database_handler
-from file_handlers import asunder_binary_data, binary_to_dict, folder_handler, debug_files_writer
-from gltf_handlers import gltf_compiler, gltf_converter
+from conversion_interfaces import BattleConversionInterface
+
 
 class BattleConversionMainWindow(QMainWindow):
     def __init__(self, parent, icon=str, assets_database=dict, sc_folder=str, deploy_folder=str):
@@ -28,11 +28,11 @@ class BattleConversionMainWindow(QMainWindow):
         self.assets_database = assets_database
         self.sc_folder = sc_folder
         self.deploy_folder = deploy_folder
-        self.check_sc_folder()
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.full_screen_available_x = self.screen().availableGeometry().width() # Maybe i should use this to generate the calcs for the OpenGL Window Widget
         self.full_screen_available_y = self.screen().availableGeometry().height()
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.initializate_window()
     
     def initializate_window(self):
@@ -50,23 +50,25 @@ class BattleConversionMainWindow(QMainWindow):
         self.create_menu() # -> Creation of menu always after Building Actions
         self.create_window_layout()
         self.create_treeview()
-        self.create_opengl_window()
+        self.create_preview_window()
         self.create_conversion_queue()
         self.create_conversion_controls_panel()
     
     # Actions for the Menu Bar
     def build_actions(self):
-        self.add_all_action = QAction('Add All to Convert', self)
-        self.add_all_action.setShortcut(QKeySequence('Ctrl+A'))
-        self.add_all_action.setStatusTip('Add all elements from the Main Parent to be converted')
-        self.add_all_action.triggered.connect(self.add_all_models_to_conversion_queue)
-    
-    def add_all_models_to_conversion_queue(self):
-        print(f'Adding all models to be Converted')
+        self.add_all_action = QAction('Quit Battle Conversion', self)
+        self.add_all_action.setShortcut(QKeySequence('Ctrl+X'))
+        self.add_all_action.setStatusTip('Quit this Conversion Window')
+        self.add_all_action.triggered.connect(self.quit_battle_window)
     
     def create_menu(self):
-        queue_tools_menu = self.menuBar().addMenu('Queue Tools')
+        queue_tools_menu = self.menuBar().addMenu('Window')
         queue_tools_menu.addAction(self.add_all_action)
+
+    def quit_battle_window(self):
+        # close() closes the window and deleteLater() will destroy the PyQt object avoiding keep everything in Memory
+        self.close()
+        self.deleteLater()
 
     # Creation of Widgets
     def create_window_layout(self):
@@ -90,44 +92,6 @@ class BattleConversionMainWindow(QMainWindow):
         self.tree_view_scrollbar = QScrollBar()
         self.treeview.setVerticalScrollBar(self.tree_view_scrollbar)
     
-    def create_opengl_window(self):
-        # Create the Main Widget
-        self.opengl_window = QGroupBox('OpenGL Window')
-        self.main_window_layout.addWidget(self.opengl_window,0,1)
-    
-    def create_conversion_queue(self):
-        # Create the Main Widget and Setup it
-        self.conversion_queue_listwidget = QListWidget()
-        adjust_conv_queue_x = self.full_screen_available_x // 2
-        adjust_conv_queue_y = self.full_screen_available_y // 3
-        self.conversion_queue_listwidget.setMaximumSize(adjust_conv_queue_x, adjust_conv_queue_y)
-        self.main_window_layout.addWidget(self.conversion_queue_listwidget,1,1)
-        self.conversion_queue_scrollbar = QScrollBar()
-        self.conversion_queue_listwidget.setVerticalScrollBar(self.conversion_queue_scrollbar)
-    
-    def create_conversion_controls_panel(self):
-        # Create Main Widget
-        self.control_panel_box = QGroupBox('Conversion Controls')
-        self.main_window_layout.addWidget(self.control_panel_box,0,2,0,1)
-        # Create Layout
-        self.control_panel_layout = QGridLayout(self.control_panel_box)
-        # Create Label to show Text
-        self.text_label_controls = QLabel('Here you can control everything related to Conversion')
-        # Create Buttons
-        self.convert_model_button = QPushButton('Convert Models')
-
-        # Setup all the Widgets
-        self.convert_model_button.setMaximumSize(150, 100)
-        self.convert_model_button.setToolTip('Process the selected models')
-        self.control_panel_layout.addWidget(self.text_label_controls)
-        self.control_panel_layout.addWidget(self.convert_model_button,0,1)
-        
-        # Setup Actions for Pushable/Selectable Widgets
-        self.convert_model_button.clicked.connect(self.convert_model_selected)
-        self.treeview.clicked.connect(self.check_if_selected)
-        self.convert_model_button.setEnabled(False)
-
-    # Specific Methods for each Widget
     def create_treeview_data(self):
         self.name_black_list: list = []
         self.super_parent_selected_nodes: str = f''
@@ -158,68 +122,399 @@ class BattleConversionMainWindow(QMainWindow):
 
         self.treeview.setModel(self.treeview_model)
         self.treeview.setExpandsOnDoubleClick(True)
+    
+    def create_preview_window(self):
+        # Create the Main Widget
+        self.preview_window_layout = QGroupBox('Preview Window') # OpenGL Window and other if needed
+        self.main_window_layout.addWidget(self.preview_window_layout,0,1)
+    
+    def create_conversion_queue(self):
+        # Create the Main Widget and Setup it
+        self.conversion_queue_listwidget = QListWidget()
+        adjust_conv_queue_x = self.full_screen_available_x // 2
+        adjust_conv_queue_y = self.full_screen_available_y // 3
+        self.conversion_queue_listwidget.setMaximumSize(adjust_conv_queue_x, adjust_conv_queue_y)
+        self.main_window_layout.addWidget(self.conversion_queue_listwidget,1,1)
+        self.conversion_queue_scrollbar = QScrollBar()
+        self.conversion_queue_listwidget.setVerticalScrollBar(self.conversion_queue_scrollbar)
+    
+    def create_conversion_controls_panel(self):
+        # Bool Values needed for Conversion by Default this are the values at startup of the Battle Conversion Window
+        # This will help people that want just a very fast thing to do
+        self.anim_passive_convert: bool = True
+        self.anim_attack_convert: bool = False
+        self.texture_convert: bool = False
+        self.tmd_report: bool = False
+        self.prim_report: bool = False
+        self.generate_primdata: bool = False
+        self.mode_selected: str = 'Single'
+        self.combobox_selection: str = 'None'
+        # Create Main Widget
+        self.control_panel_box = QGroupBox('Conversion Controls')
+        self.main_window_layout.addWidget(self.control_panel_box,0,2,0,1)
+        # Create Layouts, Adding them to the Main Panel Layout and sorting them
+        self.main_panel_layout = QGridLayout(self.control_panel_box)
+        self.mode_selection_layout = QGridLayout()
+        self.mode_options_layout = QGridLayout()
+        self.convert_layout = QGridLayout()
+        self.main_panel_layout.addLayout(self.mode_selection_layout, 0, 0)
+        self.main_panel_layout.addLayout(self.mode_options_layout, 1, 0)
+        self.main_panel_layout.addLayout(self.convert_layout, 2, 0)
+        # Create Mode Buttons
+        self.change_conversion_mode_single = QPushButton('Single Model Mode')
+        self.change_conversion_mode_multi = QPushButton('Multiple Models Mode')
+        self.change_conversion_mode_batch = QPushButton('Batch Models Mode')
+        # Create Label to show Text
+        self.text_label_controls = QLabel('Select the Mode\nyou want to work on')
+        # Create Convert Button
+        self.convert_model_button = QPushButton('Convert Models')
+        # Create Progress bar for conversion
+        self.progressbar_conversion = QProgressBar()
+        # Sizes
+        self.change_conversion_mode_single.setMaximumSize(300, 100)
+        self.change_conversion_mode_single.setMinimumSize(150, 50)
+        self.change_conversion_mode_multi.setMaximumSize(300, 100)
+        self.change_conversion_mode_multi.setMinimumSize(150, 50)
+        self.change_conversion_mode_batch.setMaximumSize(300, 100)
+        self.change_conversion_mode_batch.setMinimumSize(150, 50)
+        self.text_label_controls.setMaximumSize(200, 100)
+        self.convert_model_button.setMaximumSize(200, 100)
+        self.progressbar_conversion.setMinimumSize(200, 50)
+        # Tooltips
+        self.change_conversion_mode_single.setToolTip('Change Conversion Mode to: Single.\nYou must select what model you want to convert')
+        self.change_conversion_mode_multi.setToolTip('Change Conversion Mode to: Multiple.\nYou must select a parent, all the models below will be converted.\nWARNING: This Option can take several minutes to perform')
+        self.change_conversion_mode_batch.setToolTip('Change Conversion Mode to: Batch.\nWill Convert all the models with all the Animations available.\nWARNING: This Option is the slowest and can take several minutes if not hours to perform!')
+        self.convert_model_button.setToolTip('Process the selected model')
+        # Positioning
+        # Example of Alignment self.control_panel_layout.setAlignment(Qt.AlignmentFlag.AlignAbsolute)
+        self.mode_selection_layout.addWidget(self.change_conversion_mode_single,0,0)
+        self.mode_selection_layout.addWidget(self.change_conversion_mode_multi,0,1)
+        self.mode_selection_layout.addWidget(self.change_conversion_mode_batch,0,2)
+        self.convert_layout.addWidget(self.text_label_controls,3,2)
+        self.convert_layout.addWidget(self.convert_model_button,4,2)
+        self.convert_layout.addWidget(self.progressbar_conversion,5,1,1,3)
+        
+        # Setup Actions for Pushable/Selectable Widgets
+        self.text_label_controls.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.treeview.selectionModel().selectionChanged.connect(self.check_if_selected)
+        self.change_conversion_mode_single.setEnabled(True)
+        self.change_conversion_mode_multi.setEnabled(True)
+        self.change_conversion_mode_batch.setEnabled(True)
+        self.convert_model_button.setEnabled(False)
+        self.progressbar_conversion.setValue(0)
+        self.progressbar_conversion.setDisabled(True)
+        self.change_conversion_mode_single.clicked.connect(self.enable_single_conversion)
+        self.change_conversion_mode_multi.clicked.connect(self.enable_multiconversion)
+        self.change_conversion_mode_batch.clicked.connect(self.enable_batch_conversion)
+        self.convert_model_button.clicked.connect(self.convert_model_selected)
+        
+        # Create Checkboxes
+        self.check_passive_animations = QCheckBox('Passive Animations')
+        self.check_attack_animations = QCheckBox('Attack Animations')
+        self.check_texture = QCheckBox('Textures')
+        self.check_tmd_report = QCheckBox('TMD Report')
+        self.check_prim_report = QCheckBox('Primitives Report')
+        self.check_generate_primdata = QCheckBox('PrimData File')
+        # Create ComboBox
+        self.parent_combobox = QComboBox()
+        # Sizes
+        self.check_passive_animations.setMaximumSize(200, 200)
+        self.check_attack_animations.setMaximumSize(200, 200)
+        self.check_texture.setMaximumSize(200, 200)
+        self.check_tmd_report.setMaximumSize(200, 200)
+        self.check_prim_report.setMaximumSize(200, 200)
+        self.check_generate_primdata.setMaximumSize(200, 200)
+        # Tooltips
+        self.check_passive_animations.setToolTip('Enable/Disable conversion of Base/Passive Animations')
+        self.check_attack_animations.setToolTip('Enable/Disable conversion of Attack Animations if available')
+        self.check_texture.setToolTip('Enable/Disable conversion of Textures if available,\nWARNING: Enable this Option will slow down the conversion')
+        self.check_tmd_report.setToolTip('Create a TMD Report File to check Model integrity')
+        self.check_prim_report.setToolTip('Create a Primitive per Object Report file to know which types and number this types are used in the original Model')
+        self.check_generate_primdata.setToolTip('Create a PrimData file, which is used along with the Blender to TLoD tool for modding 3D Models')
+        self.parent_combobox.setToolTip('Select a Parent to be Converted')
+        # Positioning
+        self.mode_options_layout.addWidget(self.check_passive_animations,1,0, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.check_attack_animations,1,1, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.check_texture,1,2, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.check_tmd_report,2,0, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.check_prim_report,2,1, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.check_generate_primdata,2,2, Qt.AlignmentFlag.AlignCenter)
+        self.mode_options_layout.addWidget(self.parent_combobox,3,1, Qt.AlignmentFlag.AlignCenter)
+        # Add items to the Combobox
+        for parent in self.assets_database.get('Battle'):
+            self.parent_combobox.addItem(parent)
+        # Setup Basic Actions for Pushable/Selectable Widgets
+        self.parent_combobox.setDisabled(True)
+        self.check_passive_animations.setChecked(True)
+        self.check_attack_animations.setChecked(False)
+        self.check_texture.setChecked(False)
+        self.check_tmd_report.setChecked(False)
+        self.check_prim_report.setChecked(False)
+        self.check_generate_primdata.setChecked(False)
+        self.parent_combobox.setDisabled(True)
 
+    # Specific Methods for each Widget in Single Mode Conversion
     def check_if_selected(self):
+        self.super_parent_selected_nodes: str = ''
+        self.parent_selected_nodes: str = ''
+        self.children_selected_nodes: str = ''
         selected_items = self.treeview.selectionModel().selectedIndexes()
         for current_selection in selected_items:
-            name_selected = self.treeview_model.data(current_selection, 0)
-            parent_selected = self.treeview_model.parent(current_selection)
-            parent_name = self.treeview_model.data(parent_selected, 0)
-            have_children = self.treeview_model.hasChildren(current_selection)
-            if parent_name == None:
+            this_selection = self.treeview.model().itemFromIndex(current_selection)
+            parent_item = this_selection.parent()
+            if parent_item != None:
+                child_item = this_selection.child(0)
+                parent_of_the_parent = parent_item.parent()
+                if child_item == None:
+                    self.convert_model_button.setEnabled(True)
+                    if parent_of_the_parent != None:
+                        self.super_parent_selected_nodes = parent_of_the_parent.text()
+                        self.parent_selected_nodes = parent_item.text()
+                        self.children_selected_nodes = this_selection.text()
+                    else:
+                        self.super_parent_selected_nodes = 'NoSuperparentUsed'
+                        self.parent_selected_nodes = parent_item.text()
+                        self.children_selected_nodes = this_selection.text()
+                else:
+                    self.convert_model_button.setEnabled(False)
+                
+            else:
                 self.convert_model_button.setEnabled(False)
-                self.super_parent_selected_nodes = name_selected
-            elif have_children == False:
-                self.children_selected_nodes = name_selected
-                self.parent_selected_nodes = parent_name
-                self.convert_model_button.setEnabled(True)
-            
-            if (parent_name != None) and (have_children == True):
-                self.convert_model_button.setEnabled(False)
+
+    def check_passive_bool(self):
+        this_bool = self.sender().isChecked()
+        self.anim_passive_convert = this_bool
+    
+    def check_attack_bool(self):
+        this_bool = self.sender().isChecked()
+        self.anim_attack_convert = this_bool
+
+    def check_texture_bool(self):
+        this_bool = self.sender().isChecked()
+        self.texture_convert = this_bool
+    
+    def check_tmd_report_bool(self):
+        this_bool = self.sender().isChecked()
+        self.tmd_report = this_bool
+    
+    def check_prim_report_bool(self):
+        this_bool = self.sender().isChecked()
+        self.prim_report = this_bool
+    
+    def check_generate_primdata_bool(self):
+        this_bool = self.sender().isChecked()
+        self.generate_primdata = this_bool
 
     def convert_model_selected(self):
-        get_battle_model_dict = self.assets_database.get(f'Battle')
-        selected_items_list: list = [self.super_parent_selected_nodes, self.parent_selected_nodes, self.children_selected_nodes]
-        """Clean the Selected Items List to fit the following logic:
-        Parent->Child (Model Object to Convert)
-        SuperParent->Parent->Child (Model Object to Convert) ==> This is used in CutScenes and Characters list due to the nesting"""
-        clean_selected_items: list = []
-        for this_selection in selected_items_list:
-            if this_selection not in clean_selected_items:
-                clean_selected_items.append(this_selection)
-        
-        if len(clean_selected_items) == 2:
-            # Get Data to be Converted
-            parent_name_denest = clean_selected_items[0].replace(" ", "_")
-            model_name_denest = clean_selected_items[1]
-            final_folder_model = model_name_denest.replace(" ", "_")
-            get_complete_objects_dict = get_battle_model_dict.get(f'{parent_name_denest}')
-            get_current_object_dict = get_complete_objects_dict.get(f'{model_name_denest}')
-            get_model_folder_path = get_current_object_dict.get(f'ModelFolder')
-            get_model_file = get_current_object_dict.get(f'ModelFile')
-            get_model_passive_anim_path = get_current_object_dict.get(f'PassiveFolder')
-            get_model_passive_anim_files = get_current_object_dict.get(f'PassiveFiles')
-            get_model_attack_anim_path = get_current_object_dict.get(f'AttackFolder')
-            get_model_attack_anim_files = get_current_object_dict.get(f'AttackFiles')
-            get_model_textures = get_current_object_dict.get(f'Textures')
-            # Setting up some Properties to Finish the Conversion
-            model_complete_file_path = f'{self.sc_folder}/{get_model_folder_path}/{get_model_file}'
-            folder_nesting = f'{parent_name_denest}, {final_folder_model}'
-            file_model_specs = {'Format': 'TMD_CContainer', 'Path': model_complete_file_path, 'Name': f'{model_name_denest}', 'isAnimated': False, 'isTextured': False}
-            debug_files_dict = {'TMDReport': True, 'PrimPerObj': True, 'PrimData': True} # This is only pass one, even in batch
-            # Start Conversion
-            new_folder = folder_handler.Folders(deploy_folder_path=self.deploy_folder, file_nesting=folder_nesting, file_name=model_name_denest)
-            file_model_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=file_model_specs)
-            processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
-            debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_files_dict, file_data=processed_data_model.model_converted_data)
-            process_to_gltf = gltf_compiler.NewGltfModel(model_data=processed_data_model.model_converted_data, animation_data=None, file_name=model_name_denest)
-            convert_gltf = gltf_converter.gltfFile(gltf_to_convert=process_to_gltf.gltf_format, gltf_file_name=model_name_denest, gltf_deploy_path=new_folder.new_file_name)
-            print(f'CONVERSION OF FILE: {model_name_denest} COMPLETE')
+        self.progressbar_conversion.setEnabled(True)
+        self.finished_conversion_item: str = ''
+        battle_assets_dict = self.assets_database.get(f'Battle')
+        selected_items_list: list = []
 
-    def check_sc_folder(self) -> None:
-        init_sc_folder = self.sc_folder
-        new_sc_folder = f'{init_sc_folder}/SECT/DRGN0.BIN'
-        self.sc_folder = new_sc_folder
+        if self.mode_selected == 'Single':
+            check_list = [self.super_parent_selected_nodes, self.parent_selected_nodes, self.children_selected_nodes]            
+            clean_list = []
+            for this_selection in check_list:
+                if (this_selection not in clean_list) and (this_selection != 'NoSuperparentUsed'):
+                    clean_list.append(this_selection)
+            selected_items_list.append(clean_list)
+            self.finished_conversion_item = f'{check_list[-2]} - {check_list[-1]}'
+
+        elif self.mode_selected == 'Multi':
+            parent_selected = self.parent_combobox.currentText()
+            super_parent_selected = battle_assets_dict.get(f'{parent_selected}')
+            for parent in super_parent_selected:
+                this_parent = super_parent_selected.get(f'{parent}')
+                if (parent_selected == 'Characters') or (parent_selected == 'CutScenes'):
+                    for this_child in this_parent:
+                        if (this_child != 'Texture') and ('Face Texture' not in this_child):
+                            this_convert_list_sub = [parent_selected, parent, this_child]
+                            selected_items_list.append(this_convert_list_sub)
+                else:
+                    this_convert_list = [parent_selected, parent]
+                    selected_items_list.append(this_convert_list)
+            self.finished_conversion_item = f'{parent_selected}'
+        
+        elif self.mode_selected == 'All':
+            warning_message = f'Are you sure want to Convert All Models?.\nKeep in mind this Option could take much time\ndepending on your hardware speed.\nTexture Conversion also will slow down the conversion a lot in this Mode.'
+            warning_messagebox = QMessageBox.warning(self, 'CAUTION!', warning_message, QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel, QMessageBox.StandardButton.Cancel)
+            
+            if warning_messagebox == QMessageBox.StandardButton.Ok:
+                for super_parent in battle_assets_dict:
+                    under_parent_data = battle_assets_dict.get(f'{super_parent}')
+                    for parent in under_parent_data:
+                        this_parent = under_parent_data.get(f'{parent}')
+                        if (super_parent == 'Characters') or (super_parent == 'CutScenes'):
+                            for this_child in this_parent:
+                                if (this_child != 'Texture') and ('Face Texture' not in this_child):
+                                    this_convert_list_sub = [super_parent, parent, this_child]
+                                    selected_items_list.append(this_convert_list_sub)
+                        else:
+                            this_convert_list = [super_parent, parent]
+                            selected_items_list.append(this_convert_list)
+                self.finished_conversion_item = f'Batch Conversion'
+                
+            elif warning_messagebox == QMessageBox.StandardButton.Cancel:
+                info_message = f'Batch Conversion Cancelled.'
+                selected_items_list = []
+                info_cancelled_messagebox = QMessageBox.information(self, 'Information', info_message, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+        
+        total_files_to_convert = len(selected_items_list)
+
+        if total_files_to_convert > 0:
+            self.change_conversion_mode_single.setDisabled(True)
+            self.change_conversion_mode_multi.setDisabled(True)
+            self.change_conversion_mode_batch.setDisabled(True)
+            self.convert_model_button.setDisabled(True)
+            self.parent_combobox.setDisabled(True)
+            self.check_passive_animations.setDisabled(True)
+            self.check_attack_animations.setDisabled(True)
+            self.check_texture.setDisabled(True)
+            self.check_tmd_report.setDisabled(True)
+            self.check_prim_report.setDisabled(True)
+            self.check_generate_primdata.setDisabled(True)
+            self.parent_combobox.setDisabled(True)
+            self.progressbar_conversion.setMinimum(0)
+            self.progressbar_conversion.setMaximum(total_files_to_convert)
+            self.thread_conversion_queue = QThreadConverting(parent=self, conversion_list=selected_items_list, battle_asset_dict=battle_assets_dict, 
+                                                             anim_passive_convert=self.anim_passive_convert, anim_attack_convert=self.anim_attack_convert, 
+                                                             texture_convert=self.texture_convert, sc_folder=self.sc_folder, 
+                                                             tmd_report=self.tmd_report, prim_report=self.prim_report, generate_primdata=self.generate_primdata, 
+                                                             deploy_folder=self.deploy_folder)
+            self.thread_conversion_queue.start()
+            self.thread_conversion_queue.progress_signal.connect(self.update_progress)
+
+    @pyqtSlot(int)
+    def update_progress(self, progress=int) -> None:
+        self.progressbar_conversion.setValue(progress)
+        self.finished_conversion()
+
+    # Specific Methods for each Widget in Single Mode Conversion
+    def enable_single_conversion(self):
+        self.anim_passive_convert = True
+        self.anim_attack_convert = True
+        self.texture_convert = True
+        self.tmd_report = True
+        self.prim_report = True
+        self.generate_primdata = True
+        self.convert_model_button.setDisabled(True)
+        self.treeview.setEnabled(True)
+        self.parent_combobox.setDisabled(True)
+        self.mode_selected = 'Single'
+        self.change_conversion_mode_single.setEnabled(False)
+        self.change_conversion_mode_multi.setEnabled(True)
+        self.change_conversion_mode_batch.setEnabled(True)
+        self.text_label_controls.setText('After you made your selection\nPress the Conversion Button')
+        # Setup Actions for Pushable/Selectable Widgets
+        self.check_passive_animations.setChecked(True)
+        self.check_passive_animations.setEnabled(True)
+        self.check_attack_animations.setChecked(True)
+        self.check_attack_animations.setEnabled(True)
+        self.check_texture.setChecked(True)
+        self.check_tmd_report.setChecked(True)
+        self.check_prim_report.setChecked(True)
+        self.check_generate_primdata.setChecked(True)
+        self.check_passive_animations.toggled.connect(self.check_passive_bool)
+        self.check_attack_animations.toggled.connect(self.check_attack_bool)
+        self.check_texture.toggled.connect(self.check_texture_bool)
+        self.check_tmd_report.toggled.connect(self.check_tmd_report_bool)
+        self.check_prim_report.toggled.connect(self.check_prim_report_bool)
+        self.check_generate_primdata.toggled.connect(self.check_generate_primdata_bool)
+
+    # Specific Methods for each Widget in Multiple Mode Conversion
+    def enable_multiconversion(self):
+        self.anim_passive_convert = True
+        self.anim_attack_convert = True
+        self.texture_convert = False
+        self.tmd_report = False
+        self.prim_report = False
+        self.generate_primdata = False
+        self.mode_selected = 'Multi'
+        self.treeview.setDisabled(True)
+        self.treeview.collapseAll()
+        self.parent_combobox.setEnabled(True)
+        self.change_conversion_mode_single.setEnabled(True)
+        self.change_conversion_mode_multi.setEnabled(False)
+        self.change_conversion_mode_batch.setEnabled(True)
+        self.anim_passive_convert = True
+        self.anim_attack_convert = True
+        self.text_label_controls.setText('After you made your selection\nPress the Conversion Button')
+        self.convert_model_button.setEnabled(True)
+        # Setup default behavior of Checkboxes
+        self.check_passive_animations.setChecked(True)
+        self.check_passive_animations.setDisabled(True)
+        self.check_attack_animations.setChecked(True)
+        self.check_attack_animations.setDisabled(True)
+        self.check_texture.setChecked(False)
+        self.check_tmd_report.setChecked(False)
+        self.check_prim_report.setChecked(False)
+        self.check_generate_primdata.setChecked(False)
+        self.check_passive_animations.toggled.connect(self.check_passive_bool)
+        self.check_attack_animations.toggled.connect(self.check_attack_bool)
+        self.check_texture.toggled.connect(self.check_texture_bool)
+        self.check_tmd_report.toggled.connect(self.check_tmd_report_bool)
+        self.check_prim_report.toggled.connect(self.check_prim_report_bool)
+        self.check_generate_primdata.toggled.connect(self.check_generate_primdata_bool)
+        
+    # Specific Methods for each Widget in Batch Mode Conversion
+    def enable_batch_conversion(self):
+        self.anim_passive_convert = True
+        self.anim_attack_convert = True
+        self.texture_convert = False
+        self.tmd_report = False
+        self.prim_report = False
+        self.generate_primdata = False
+        self.mode_selected = 'All'
+        self.treeview.setDisabled(True)
+        self.treeview.collapseAll()
+        self.parent_combobox.setDisabled(True)
+        self.change_conversion_mode_single.setEnabled(True)
+        self.change_conversion_mode_multi.setEnabled(True)
+        self.change_conversion_mode_batch.setEnabled(False)
+        self.text_label_controls.setText('After you made your selection\nPress the Conversion Button')
+        # Setup default behavior of Checkboxes
+        self.check_passive_animations.setChecked(True)
+        self.check_passive_animations.setDisabled(True)
+        self.check_attack_animations.setChecked(True)
+        self.check_attack_animations.setDisabled(True)
+        self.check_texture.setChecked(False)
+        self.check_tmd_report.setChecked(False)
+        self.check_prim_report.setChecked(False)
+        self.check_generate_primdata.setChecked(False)
+        self.convert_model_button.setEnabled(True)
+        self.check_passive_animations.toggled.connect(self.check_passive_bool)
+        self.check_attack_animations.toggled.connect(self.check_attack_bool)
+        self.check_texture.toggled.connect(self.check_texture_bool)
+        self.check_tmd_report.toggled.connect(self.check_tmd_report_bool)
+        self.check_prim_report.toggled.connect(self.check_prim_report_bool)
+        self.check_generate_primdata.toggled.connect(self.check_generate_primdata_bool)
+    
+    def finished_conversion(self):
+        if self.progressbar_conversion.value() == self.progressbar_conversion.maximum():
+            this_conversion_done = f'Conversion: {self.finished_conversion_item} Complete...'
+            conversion_done_qmessagebox = QMessageBox.information(self, 'SUCCESS!', this_conversion_done, QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
+            if (conversion_done_qmessagebox == QMessageBox.StandardButton.Ok) or (conversion_done_qmessagebox == QMessageBox.StandardButton.Close):
+                self.progressbar_conversion.setValue(0)
+                self.progressbar_conversion.setDisabled(True)
+                self.convert_model_button.setEnabled(True)
+                if self.mode_selected == 'Single':
+                    self.change_conversion_mode_multi.setEnabled(True)
+                    self.change_conversion_mode_batch.setEnabled(True)
+                    self.parent_combobox.setDisabled(True)
+                elif self.mode_selected == 'Multi':
+                    self.change_conversion_mode_single.setEnabled(True)
+                    self.change_conversion_mode_batch.setEnabled(True)
+                    self.parent_combobox.setEnabled(True)
+                elif self.mode_selected == 'All':
+                    self.change_conversion_mode_single.setEnabled(True)
+                    self.change_conversion_mode_multi.setEnabled(True)
+                    self.parent_combobox.setDisabled(True)
+                self.check_passive_animations.setEnabled(True)
+                self.check_attack_animations.setEnabled(True)
+                self.check_texture.setEnabled(True)
+                self.check_tmd_report.setEnabled(True)
+                self.check_prim_report.setEnabled(True)
+                self.check_generate_primdata.setEnabled(True)
 
 class TreeviewItem(QStandardItem):
     def __init__(self, treeview_text=str, font_size=int, set_bold=bool, color=QColor(0, 0, 0)):
@@ -233,6 +528,39 @@ class TreeviewItem(QStandardItem):
         self.setForeground(color) # Text font Color
         self.setFont(text_font)
         self.setText(treeview_text)
+
+class QThreadConverting(QThread):
+    progress_signal = pyqtSignal(int)
+    def __init__(self, parent: QObject | None = ..., conversion_list=list, battle_asset_dict=dict, 
+                 anim_passive_convert=bool, anim_attack_convert=bool, texture_convert=bool, 
+                 sc_folder=str, tmd_report=bool, prim_report=bool, generate_primdata=bool, deploy_folder=str) -> None:
+        super().__init__(parent)
+        self.conversion_list = conversion_list
+        self.battle_asset_dict = battle_asset_dict
+        self.anim_passive_convert = anim_passive_convert
+        self.anim_attack_convert = anim_attack_convert
+        self.texture_convert = texture_convert
+        self.sc_folder = sc_folder
+        self.tmd_report = tmd_report
+        self.prim_report = prim_report
+        self.generate_primdata = generate_primdata
+        self.deploy_folder = deploy_folder
+    
+    def run(self):
+        progress_conversion = 0
+        for this_model_to_convert in self.conversion_list:
+            self.single_convert = BattleConversionInterface(list_convert=this_model_to_convert, 
+                                                            assets_battle_database=self.battle_asset_dict, 
+                                                            conv_passive_anims=self.anim_passive_convert, 
+                                                            conv_attack_anims=self.anim_attack_convert, 
+                                                            conv_text=self.texture_convert, 
+                                                            sc_folder=self.sc_folder, 
+                                                            tmd_report=self.tmd_report, 
+                                                            prim_report=self.prim_report, 
+                                                            generate_primdata=self.generate_primdata, 
+                                                            deploy_folder=self.deploy_folder)
+            progress_conversion += 1
+            self.progress_signal.emit(progress_conversion)
 
 if __name__ == '__main__':
     absolute_path_current = os.path.abspath(os.getcwd())

@@ -421,10 +421,9 @@ class BinaryDataModel:
         return primitive_dict
 
 class BinaryDataAnimation:
-    def __init__(self, binary_data=dict, animation_type=str, isbped=bool) -> None:
+    def __init__(self, binary_data=dict, animation_type=str) -> None:
         self.binary_data = binary_data
         self.animation_type = animation_type
-        self.isbped = isbped
         self.animation_converted: dict = {}
         self.convert_animation()
     
@@ -432,7 +431,7 @@ class BinaryDataAnimation:
         if self.animation_type == 'SAF':
             saf_converted = self.convert_saf()
             self.animation_converted = saf_converted
-            print(f'SAF Animation Successfully converted')
+            #print(f'SAF Animation Successfully converted')
         elif self.animation_type == 'CMB':
             pass
         elif self.animation_type == 'LMB_Type0':
@@ -492,7 +491,7 @@ class BinaryDataAnimation:
                 current_object_transform: dict = {f'{this_transform}': object_rot_trans}
                 saf_converted_dict[f'Object_Number_{this_object}'].update(current_object_transform)
                 next_object_block += 12
-        saf_animation_dict = {'TotalTransforms': saf_transforms, 'AnimationData': saf_converted_dict}
+        saf_animation_dict = {'TotalTransforms': saf_transforms_adjusted, 'AnimationData': saf_converted_dict}
         return saf_animation_dict
 
 class BinaryDataTexture:
@@ -665,7 +664,9 @@ class BinaryDataTexture:
                 current_rgba = []
                 for current_pixel in image_data_itself:
                     byte_pixel = current_clut[(current_pixel*2):(current_pixel*2+2)]
-                    current_rgba.append(byte_pixel)
+                    byte_pixel_byte = int.from_bytes(byte_pixel, 'little')
+                    rgba_8bit = b''.join(self.convert_5_to_8(byte_pair=byte_pixel_byte))
+                    current_rgba.append(rgba_8bit)
                 joined_rgba = b''.join(current_rgba)
                 rgba_data_combined[f'IMAGE_{clut_num}'] = joined_rgba
         

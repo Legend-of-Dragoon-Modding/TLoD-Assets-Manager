@@ -1,5 +1,5 @@
-Texture,/characters/rose/textures/combat!
-Idle,/characters/rose/models/combat,32,/characters/rose/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
+Texture,characters/rose/textures/combat!,,,,,
+Idle,/characters/rose/models/combat,32,characters/rose/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
 Whip Smack,/characters/rose/models/combat,32,None,None,4055,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 More and More,/characters/rose/models/combat,32,None,None,4056,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
 Hard Blade,/characters/rose/models/combat,32,None,None,4057,"[16, 17, 18, 19, 20, 21, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"

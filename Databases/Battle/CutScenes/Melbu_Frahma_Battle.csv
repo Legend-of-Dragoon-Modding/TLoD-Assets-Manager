@@ -1,6 +1,6 @@
-Melbu 1st Stage,DRGN0,3525,DRGN0,"[651,652,653,654]",None,None,2562/2
-Melbu 2nd Stage,DRGN0,655,DRGN0,"[657,658,659,660,661,662]",None,None,656
-Melbu 3rd Stage,DRGN0,663,DRGN0,"[665,666,667,668,669]",None,None,664
-Melbu 3rd Stage Minion,DRGN0,670,DRGN0,"[672,673]",None,None,671
-Melbu Final Form,DRGN0,674,DRGN0,"[676,677,678,679,680,681]",None,None,675
-Monster,DRGN0,682,DRGN0,"[684,685,686,687,688]",None,None,683
+Melbu 1st Stage,None,3525/32,None,"[651, 652, 653, 654]",None,None,2562/2
+Melbu 2nd Stage,None,655,None,"[657, 658, 659, 660, 661, 662]",None,None,656
+Melbu 3rd Stage,None,663,None,"[665, 666, 667, 668, 669]",None,None,664
+Melbu 3rd Stage Minion,None,670,None,"[672, 673]",None,None,671
+Melbu Final Form,None,674,None,"[676, 677, 678, 679, 680, 681]",None,None,675
+Monster,None,682,None,"[684, 685, 686, 687, 688]",None,None,683
