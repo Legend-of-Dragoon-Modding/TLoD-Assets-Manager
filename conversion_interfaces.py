@@ -470,13 +470,13 @@ class TextureOnlyConversionInterface():
                 for this_embedded_tim in get_embedded_tims:
                     this_embedded_tim_data = get_embedded_tims.get(f'{this_embedded_tim}')
                     processed_data_texture = asunder_binary_data.Asset(bin_to_split=this_embedded_tim_data)
-                    new_nesting = f'{folder_nesting}' #, {current_texture}'
+                    new_nesting = f'{folder_nesting}, {current_texture}'
                     new_folder_textures = folder_handler.TextureFolder(deploy_folder_path=self.deploy_folder, file_nesting=new_nesting, file_name=file_name)
                     png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=texture_format)
             else:
                 file_texture_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=texture_dict)
                 processed_data_texture = asunder_binary_data.Asset(bin_to_split=file_texture_bin.bin_data_dict)
-                new_nesting = f'{folder_nesting}' #, {current_texture}'
+                new_nesting = f'{folder_nesting}, {current_texture}'
                 new_folder_textures = folder_handler.TextureFolder(deploy_folder_path=self.deploy_folder, file_nesting=new_nesting, file_name=file_name)
                 png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=texture_format)
         
@@ -516,3 +516,162 @@ class TextureOnlyConversionInterface():
                 embedded_tims.close()
         
         return tims_embedded
+
+class WorldMapConversionInterface():
+    def __init__(self, list_convert=list, assets_worldmap_database=dict, conv_anims=bool, conv_text=bool, 
+                 sc_folder=str, tmd_report=bool, prim_report=bool, generate_primdata=bool, deploy_folder=str) -> None:
+        self.selected_conversion_list = list_convert
+        self.assets_worldmap_database = assets_worldmap_database
+        self.conv_anims = conv_anims
+        self.convert_textures = conv_text
+        self.sc_folder = sc_folder
+        self.tmd_report = tmd_report
+        self.prim_report = prim_report
+        self.generate_primdata = generate_primdata
+        self.deploy_folder = deploy_folder
+        self.write_gltf()
+
+    def write_gltf(self) -> None:
+        """
+        Clean the Selected Items List to fit the following logic:
+        Parent->Child (Model Object to Convert)
+        SuperParent->Parent->Child (Model Object to Convert) ==> This is used in CutScenes and Characters list due to the nesting
+        """
+        model_data_and_info = self.get_current_model_data(selection=self.selected_conversion_list)
+        gather_model_data = self.get_data_to_convert(model_data_info=model_data_and_info)
+        convert_to_gltf = self.convert_to_gltf(model_final_dict=gather_model_data)
+
+    def get_current_model_data(self, selection=list) -> tuple[dict, str, list]:
+        """
+        Get current Model Data:\n
+        Will grab the Data needed, based on the self.selected_conversion_list [Selections made by user]\n
+        list size. This because Characters and CutScenes need one step more,\n
+        due to the Dictionary nesting needed.
+        """
+        """
+        Example of difference:
+        Battle -> Enemies -> Mantis
+        CutScenes -> Urobolos Death -> Dart
+        this also impact to the nesting in the Dictionary which contains the Data.
+        """
+        model_data_dict: dict = {}
+        parent_name: str = ''
+        nesting_folders: list = []
+
+        parent_name = selection[0].replace(' ', '_')
+        model_name = selection[1]
+        models_complete_dict = self.assets_worldmap_database.get(f'{parent_name}')
+        model_data_dict = models_complete_dict.get(f'{model_name}')
+        nesting_folders.append(parent_name)
+        nesting_folders.append(model_name)
+
+        return model_data_dict, nesting_folders
+    
+    def get_data_to_convert(self, model_data_info=tuple) -> dict:
+        """
+        Get Data to Convert:\n
+        Will take the data from the current Model selected dictionary\n
+        and extract all the requeried data from it.
+        """
+        
+        model_data = model_data_info[0]
+        nesting_folder = model_data_info[1]
+        model_name = nesting_folder[1]
+
+        model_folder_nesting = str(nesting_folder).replace('[', '').replace(']', '').replace('\'', '').replace('"', '')
+        final_model_dict: dict = {}
+
+        folder_path = model_data.get(f'ModelFolder')
+        model_file = model_data.get(f'ModelFile')
+        anim_path = model_data.get(f'PassiveFolder')
+        animation_files = str(model_data.get(f'PassiveFiles')).replace('"', '').replace('[', '').replace(']', '').split(', ')
+        texture_file = model_data.get(f'Textures')
+        
+        # SC Folder Path to Model File
+        model_full_path: str = ''
+        tmd_type: str = ''
+        if folder_path == 'DRGN0.BIN':
+            model_full_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{model_file}'
+            tmd_type = 'TMD_Standard'
+        else:
+            model_full_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{folder_path}\\{model_file}'
+            tmd_type = 'TMD_CContainer'
+        
+        # SC Folder path to Model Anims
+        animation_full_path: str = ''
+        if anim_path != 'None':
+            animation_full_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{anim_path}'
+        else:
+            animation_full_path = 'None'
+            animation_files = []
+        
+        # Texture Path Settings
+        texture_files: list = []
+        textures_full_path: list = []
+        split_folder_from_file = texture_file.split('[')
+        texture_folder = split_folder_from_file[0]
+        texture_files = split_folder_from_file[1].replace('[', '').replace(']', '').strip().split(',')
+
+        for this_texture in texture_files:
+            this_texture_full_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{texture_folder}\\{this_texture}'
+            textures_full_path.append(this_texture_full_path)
+        
+        file_model_specs = {'Format': tmd_type, 'Path': model_full_path}
+        animation_specs = {'Format': 'SAF_CContainer', 'Path': animation_full_path, 'Files': animation_files}
+        texture_model_specs = {'Format': 'TIM', 'Path': textures_full_path}
+        debug_files_dict = {'TMDReport': self.tmd_report, 'PrimPerObj': self.prim_report, 'PrimData': self.generate_primdata}
+        
+        final_model_dict = {'Name': model_name, 'Model': file_model_specs, 
+                            'Anims': animation_specs, 
+                            'FolderNesting': model_folder_nesting, 'Texture': texture_model_specs, 
+                            'Debug': debug_files_dict}
+
+        return final_model_dict
+
+    def convert_to_gltf(self, model_final_dict=dict) -> str:
+        file_name = model_final_dict.get('Name')
+        file_model_specs = model_final_dict.get('Model')
+        animation_specs = model_final_dict.get('Anims')
+        folder_nesting = model_final_dict.get('FolderNesting')
+        texture_specs = model_final_dict.get('Texture')
+        debug_options = model_final_dict.get('Debug')
+
+        # Start Conversion
+        # Binary Conversion to glTF Format
+        file_model_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=file_model_specs)
+        processed_data_model = asunder_binary_data.Asset(bin_to_split=file_model_bin.bin_data_dict)
+
+        # Get Animation Flags to know if Conversion needed
+        animations_converted: dict | None = {}
+        if (self.conv_anims == True) and (animation_specs.get('Path') != 'None'):
+            passive_anims_bin = binary_to_dict.BinariesToDict(binaries_to_dict=animation_specs)
+            for this_anim in passive_anims_bin.binaries_data_dict:
+                get_anim_data = passive_anims_bin.binaries_data_dict.get(f'{this_anim}')
+                processed_data_anim = asunder_binary_data.Asset(bin_to_split=get_anim_data)
+                animations_converted.update({f'Passive_{this_anim}': processed_data_anim.animation_converted_data})
+        if len(animations_converted) == 0:
+            animations_converted = None
+
+        # Process the TMD Model Data into glTF Format
+        process_to_gltf = gltf_compiler.NewGltfModel(model_data=processed_data_model.model_converted_data, animation_data=animations_converted, file_name=file_name)
+        
+        # Writting Folders and Files
+        new_folder = folder_handler.Folders(deploy_folder_path=self.deploy_folder, file_nesting=folder_nesting, file_name=file_name)
+        convert_gltf = gltf_converter.gltfFile(gltf_to_convert=process_to_gltf.gltf_format, gltf_file_name=file_name, gltf_deploy_path=new_folder.new_file_name)
+        debug_data = debug_files_writer.DebugData(converted_file_path=new_folder.new_file_name, debug_files_flag=debug_options, file_data=processed_data_model.model_converted_data)
+        
+        # Since Textures are the most expensive processing thing will be at the end of the processing
+        if (self.convert_textures == True) and (texture_specs.get('Path') != ''):
+            format = texture_specs.get(f'Format')
+            texture_files = texture_specs.get(f'Path')
+            for this_texture_path in texture_files:
+                texture_name_end = this_texture_path.rfind('\\')
+                texture_name = this_texture_path[texture_name_end + 1:]
+                single_texture_spec = {'Format': format, 'Path': this_texture_path}
+                file_texture_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=single_texture_spec)
+                processed_data_texture = asunder_binary_data.Asset(bin_to_split=file_texture_bin.bin_data_dict)
+                texture_file_nesting = f'{folder_nesting}, Textures, {texture_name}'
+                new_folder_textures = folder_handler.TextureFolder(deploy_folder_path=self.deploy_folder, file_nesting=texture_file_nesting, file_name=file_name)
+                png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=format)
+        
+        return file_name

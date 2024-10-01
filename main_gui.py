@@ -20,6 +20,7 @@ import config_handler
 import database_handler
 from battle_conversion_window import BattleConversionMainWindow
 from submap_conversion_window import SubMapConversionMainWindow
+from worldmap_conversion_window import WorldMapConversionMainWindow
 from texture_only_conversion_window import TextOnlyConversionMainWindow
 #from deff_conversion_window import DeffConversionMainWindow
 
@@ -92,11 +93,13 @@ class MainWindow(QMainWindow):
         self.about_button = QPushButton('About')
         self.convert_batttle_models_button = QPushButton('Convert Battle Models')
         self.convert_submap_models_button = QPushButton('Convert SubMap Models')
+        self.convert_worldmap_models_button = QPushButton('Convert WorldMap Models')
         self.convert_texture_only_button = QPushButton('Textures Only')
         self.convert_deff_button = QPushButton('Convert DEFF')
         # Set Widgets Minimums and Maximum Sizes
         self.convert_batttle_models_button.setMaximumSize(150, 100)
         self.convert_submap_models_button.setMaximumSize(150, 100)
+        self.convert_worldmap_models_button.setMaximumSize(150, 100)
         self.convert_texture_only_button.setMaximumSize(150, 100)
         self.convert_deff_button.setMaximumSize(150, 100)
         self.configuration_button.setMaximumSize(150, 100)
@@ -106,6 +109,7 @@ class MainWindow(QMainWindow):
         self.configuration_button.setToolTip('Configure the Tool to your needs...')
         self.about_button.setToolTip('Show up the About window...')
         self.convert_submap_models_button.setToolTip('Convert Models and Textures from SubMaps TLoD')
+        self.convert_worldmap_models_button.setToolTip('Convert Models and Textures from WorldMap TLoD')
         self.convert_texture_only_button.setToolTip('Convert Textures that are not associated directly to a Model in TLoD')
         self.convert_deff_button.setToolTip('Convert DEFF Files into a Single Scene')
         # Set the Layout to place the objects in the Window
@@ -116,7 +120,8 @@ class MainWindow(QMainWindow):
         # Add Widgets to the Layout
         self.main_buttons_layout.addWidget(self.convert_batttle_models_button,0,1)
         self.main_buttons_layout.addWidget(self.convert_submap_models_button,0,2)
-        self.main_buttons_layout.addWidget(self.convert_texture_only_button,0,3)
+        self.main_buttons_layout.addWidget(self.convert_worldmap_models_button,0,3)
+        self.main_buttons_layout.addWidget(self.convert_texture_only_button,2,3)
         self.main_buttons_layout.addWidget(self.convert_deff_button,2,2)
         self.main_buttons_layout.addWidget(self.configuration_button,2,0)
         self.main_buttons_layout.addWidget(self.about_button,3,0)
@@ -125,6 +130,7 @@ class MainWindow(QMainWindow):
         self.about_button.clicked.connect(self.about_asset_manager)
         self.convert_batttle_models_button.clicked.connect(self.battle_conversion_window)
         self.convert_submap_models_button.clicked.connect(self.submap_conversion_window)
+        self.convert_worldmap_models_button.clicked.connect(self.worldmap_conversion_window)
         self.convert_texture_only_button.clicked.connect(self.textonly_conversion_window)
         self.convert_deff_button.setDisabled(True)
         #self.convert_deff_button.clicked.connect(self.deff_conversion_window)
@@ -305,6 +311,11 @@ class MainWindow(QMainWindow):
         deploy_folder = self.init_config.get(f'Deploy_Folder')
         submap_conversion_window = SubMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder )
     
+    def worldmap_conversion_window(self):
+        sc_folder_get = self.init_config.get(f'SC_Folder')
+        deploy_folder = self.init_config.get(f'Deploy_Folder')
+        submap_conversion_window = WorldMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder )
+
     def textonly_conversion_window(self):
         sc_folder_get = self.init_config.get(f'SC_Folder')
         deploy_folder = self.init_config.get(f'Deploy_Folder')
