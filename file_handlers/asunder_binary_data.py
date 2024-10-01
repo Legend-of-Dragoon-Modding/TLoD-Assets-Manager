@@ -37,8 +37,8 @@ class Asset:
             self.split_cc_tmd()
         elif self.file_format == 'SAF_CContainer':
             self.split_cc_saf()
-        elif self.file_format == 'TIM':
-            self.split_tim()
+        elif (self.file_format == 'TIM') or (self.file_format == 'PXL') or (self.file_format == 'MCQ'):
+            self.split_texture(texture_format=self.file_format)
         else:
             no_conversion_method = f'Conversion Method for {self.file_format}, NOT IMPLEMENTED!!'
             error_no_conversion_method = QMessageBox.critical(None, 'CRITICAL ERROR!!', f'FATAL!!:\n{no_conversion_method}', QMessageBox.StandardButton.Ok)
@@ -115,16 +115,16 @@ class Asset:
         saf_animation_converted = binary_data_handler.BinaryDataAnimation(binary_data=animation_binary_data, animation_type='SAF')
         self.animation_converted_data = saf_animation_converted.animation_converted
 
-    def split_tim(self):
+    def split_texture(self, texture_format=str):
         """
-        This method takes the Binary Data from a TIM File and after split their binary Data,
+        This method takes the Binary Data from a TIM/PXL/MCQ File and after split their binary Data,
         converter it into Human readable data. Since Textures have other Structure,
         how this are converted it's slightly different from Models or Animations.\n\n\n
         This Example will show the Dictionary Nesting to Hold the data\n
         {Texture_Name: {}\n\n
         """
         bin_clean_type_list = self.file_data[0]
-        tim_texture_converted = binary_data_handler.BinaryDataTexture(binary_data=bin_clean_type_list, type_of_texture='TIM')
+        tim_texture_converted = binary_data_handler.BinaryDataTexture(binary_data=bin_clean_type_list, type_of_texture=texture_format)
         self.texture_converted_data = tim_texture_converted.texture_converted
 
     def split_object_table_tmd(self, number_objs=int, model_data=bytes) -> dict:

@@ -13,9 +13,6 @@ Copyright (C) 2024 DooMMetaL
 """
 from PyQt6.QtWidgets import QMessageBox
 from typing import Any
-import time
-from PIL import Image
-import io
 CONVERT_5_TO_8_BIT = [0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255]
 
 class BinaryDataModel:
@@ -506,9 +503,10 @@ class BinaryDataTexture:
             tim_file_decoded = self.convert_tim_file()
             self.texture_converted = tim_file_decoded
         elif self.type_of_texture == 'PXL':
-            print('PXL FILE')
+            print('PXL FILE Not Implemented')
         elif self.type_of_texture == 'MCQ':
-            print('MCQ FILE')
+            mcq_file_decoded = self.convert_mcq_file()
+            self.texture_converted = mcq_file_decoded
         else:
             no_texture_converter = f'Texture Type: {self.type_of_texture}, have no Converter/Handler Implemented'
             error_no_conversion_animation = QMessageBox.critical(None, 'CRITICAL ERROR!!', f'FATAL!!:\n{no_texture_converter}', QMessageBox.StandardButton.Ok)
@@ -692,3 +690,130 @@ class BinaryDataTexture:
         b = int.to_bytes(b_int, 1, 'big')
         a = int.to_bytes(a_int, 1, 'big')
         return r, g, b, a
+    
+    def convert_mcq_file(self) -> dict:
+        mcq_to_png: dict = {}
+
+        mcq_data: dict = {'CLUT_WIDTH': 0, 'Pixel_Data': [], 'X': 0, 'Y': 0}
+        # READ MCQ FLAGs and split the data
+        data_start_bin = self.binary_data[4:8]
+        data_start = int.from_bytes(data_start_bin, byteorder='little', signed=False)
+        mcq_data['Pixel_Data'] = self.binary_data[data_start:]
+        mcq_data['X'] = int.from_bytes(self.binary_data[20:22], 'little', signed=False)
+        mcq_data['Y'] = int.from_bytes(self.binary_data[22:24], 'little', signed=False)
+        mcq_data['CLUT_WIDTH'] = int.from_bytes(self.binary_data[16:18], 'little', signed=False)
+
+        mcq_processed_data = self.process_mcq_data(mcq_split_data=mcq_data)
+
+        both_sizes = {'IntendedX': mcq_processed_data[1], 'IntendedY': mcq_processed_data[2],  'AlignX': mcq_processed_data[3], 'AlignY': mcq_processed_data[4]}
+        mcq_to_png = {'SizeImg': both_sizes, 'RGBA_Data': mcq_processed_data[0]}
+
+        return mcq_to_png
+    
+    def process_mcq_data(self, mcq_split_data=dict) -> tuple[bytes, int, int, int, int]:
+        final_rgba: bytes = b''
+        final_image_width: int = 0
+        final_image_height: int = 0
+        final_align_width: int = 0
+        final_align_height: int = 0
+
+        image_width = mcq_split_data.get('X')
+        image_height = mcq_split_data.get('Y')
+        clut_width = mcq_split_data.get('CLUT_WIDTH')
+        mcq_pixel_data = mcq_split_data.get('Pixel_Data')
+        mcq_preprocessed = self.preprocess_mcq(pixel_data=mcq_pixel_data, image_width=image_width, image_height=image_height, clut_width=clut_width)
+        align_width = mcq_preprocessed[2]
+        align_height = mcq_preprocessed[3]
+        mcq_processed = self.combine_mcq(final_clut=mcq_preprocessed[0], image_data_rows=mcq_preprocessed[1])
+        final_rgba = self.convert_5_to_8_mcq(byte_pixel_list=mcq_processed)
+        final_image_width = image_width
+        final_image_height = image_height
+        final_align_width = align_width
+        final_align_height = align_height
+
+        return final_rgba, final_image_width, final_image_height, final_align_width, final_align_height
+
+    def preprocess_mcq(self, pixel_data=bytes, image_width=int, image_height=int, clut_width=int) -> tuple[list, list, int, int]:
+        final_clut: list = []
+        image_data_rows: list = []
+        # We need some alignments before start working, this side no matters if Y > X, since we need to work always as Y < X
+        align_width = (image_width * image_height) // 256
+        align_height = 256
+        align_width = tile_count = align_width + (align_width % 16) if align_width > 16 else 16
+        # In this block get the CLUTs and the Image Data
+        clut_1 = []
+        clut_2 = []
+        clut_3 = []
+        move_slice = 0
+        for byte_range in range(0, 256):
+            clut_1_get = pixel_data[move_slice:(move_slice + 32)]
+            clut_1.append(clut_1_get)
+            move_slice += 32
+            if clut_width > 16:
+                clut_2_get = pixel_data[move_slice:(move_slice + 32)]
+                clut_2.append(clut_2_get)
+                move_slice += 32
+                if clut_width > 32:
+                    clut_3_get = pixel_data[move_slice:(move_slice + 32)]
+                    clut_3.append(clut_3_get)
+                    move_slice += 32
+            row = []
+            for j in range(align_width // 16):
+                r = pixel_data[move_slice: (move_slice + 8)]
+                move_slice += 8
+                if r == b'':
+                    r = b'\x00' * 8
+                row.append(r)
+            image_data_rows.append(row)
+        concatenate_clut = clut_1 + clut_2 + clut_3
+        final_clut = concatenate_clut[:tile_count]
+
+        return final_clut, image_data_rows, align_width, align_height
+
+    def combine_mcq(self, final_clut=list, image_data_rows=list) -> list:
+        byte_pixel_list: list = []
+        # Now we do some operations over the rows of data
+        row_data_combined = []
+        offset_clut = 0
+        for i, row in enumerate(image_data_rows):
+            clut_index = 0
+
+            if (i % 16 == 0) and (i > 0):
+                offset_clut += 1
+
+            for tile_row in row:
+                current_clut = final_clut[clut_index + offset_clut]
+                new_combined_row = b''
+                for pixel in tile_row:
+                    byte1 = pixel & 0x0f
+                    byte2 = pixel >> 0x04
+                    byte_pair1 = current_clut[byte1 * 2:byte1 * 2 + 2]
+                    new_combined_row += byte_pair1
+                    byte_pair2 = current_clut[byte2 * 2:byte2 * 2 + 2]
+                    new_combined_row += byte_pair2
+                row_data_combined.append(new_combined_row)
+                clut_index += 16
+        
+        joined_data_combined = b''.join(row_data_combined)
+        
+        while len(joined_data_combined) != 0:
+            get_this_join = joined_data_combined[:2]
+            byte_pixel_list.append(get_this_join)
+            joined_data_combined = joined_data_combined[2:]
+        
+        return byte_pixel_list
+
+    def convert_5_to_8_mcq(self, byte_pixel_list=list) -> bytes:
+        final_rgba: bytes = b''
+        rgba_data = []
+        for bytepixel in byte_pixel_list:
+            bp = int.from_bytes(bytepixel, 'little')
+            a = 0b11111111 if (bp >> 15 == 0) else 0b01111111
+            b = ((bp >> 10) & 0b11111) << 3
+            g = ((bp >> 5) & 0b11111) << 3
+            r = (bp & 0b11111) << 3
+            rgba = [int.to_bytes(x, 1, 'big') for x in (r, g, b, a)]
+            rgba_data.extend(rgba)
+        
+        final_rgba = b''.join(rgba_data)
+        return final_rgba

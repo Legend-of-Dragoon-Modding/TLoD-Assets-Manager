@@ -21,7 +21,7 @@ import database_handler
 from battle_conversion_window import BattleConversionMainWindow
 from submap_conversion_window import SubMapConversionMainWindow
 from texture_only_conversion_window import TextOnlyConversionMainWindow
-from deff_conversion_window import DeffConversionMainWindow
+#from deff_conversion_window import DeffConversionMainWindow
 
 class MainWindow(QMainWindow):
     def __init__(self, title=str, init_config=dict, init_config_path=str, assets_database=dict, icon=str, bg_img=str):
@@ -126,7 +126,8 @@ class MainWindow(QMainWindow):
         self.convert_batttle_models_button.clicked.connect(self.battle_conversion_window)
         self.convert_submap_models_button.clicked.connect(self.submap_conversion_window)
         self.convert_texture_only_button.clicked.connect(self.textonly_conversion_window)
-        self.convert_deff_button.clicked.connect(self.deff_conversion_window)
+        self.convert_deff_button.setDisabled(True)
+        #self.convert_deff_button.clicked.connect(self.deff_conversion_window)
 
     def set_window_background(self):
         self.main_background_image.setStyleSheet("QWidget#BackgroundImageMain {background-image: url(\""+ self.bg_img + "\");" + "background-repeat: no-repeat;}")
@@ -269,7 +270,7 @@ class MainWindow(QMainWindow):
         about_label_1.setText(f'TLoD Assets Manager:\nBorn merging of two previous Tools:\nTLoD-TMD-Converter and TLoD-Texture-Converter. Bringing the BEST of the two Worlds\nalso adding more functionality for the user')
         about_label_2.setText(f'As in my previous tools, said:\nThis Tool was made from fans to fans!, keep it as it is!\nCoded By DooMMetal (AKA DragoonSouls) 2024 ©')
         about_label_3.setText(f'Visit my Github for updates and issues tracking at:')
-        about_label_4_url.setText(f'<a href=\"https://github.com/Legend-of-Dragoon-Modding/TLoD-TMD-Converter\">TLoD Assets Manager GitHub</a>')
+        about_label_4_url.setText(f'<a href=\"https://github.com/Legend-of-Dragoon-Modding/TLoD-Assets-Manager\">TLoD Assets Manager GitHub</a>')
         about_label_4_url.setOpenExternalLinks(True)
         # Generate Layout
         about_window_layout = QGridLayout()
@@ -305,11 +306,14 @@ class MainWindow(QMainWindow):
         submap_conversion_window = SubMapConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder )
     
     def textonly_conversion_window(self):
-        textonly_conversion_window = TextOnlyConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database)
+        sc_folder_get = self.init_config.get(f'SC_Folder')
+        deploy_folder = self.init_config.get(f'Deploy_Folder')
+        textonly_conversion_window = TextOnlyConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder)
     
     def deff_conversion_window(self):
-        sc_folder_get = self.init_config.get(f'SC_Folder')
-        deff_conversion_window = DeffConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get)
+        pass
+        #sc_folder_get = self.init_config.get(f'SC_Folder')
+        #deff_conversion_window = DeffConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get)
 
 if __name__ == '__main__':
     absolute_path_current = os.path.abspath(os.getcwd())

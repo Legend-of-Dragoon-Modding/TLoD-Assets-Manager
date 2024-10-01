@@ -382,3 +382,137 @@ class SubMapConversionInterface():
                 png_file_write = png_writer.PngFile(texture_data=current_processed_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type='TIM')
 
         return file_name
+    
+class TextureOnlyConversionInterface():
+    def __init__(self, list_convert=list, texture_assets_database=dict, sc_folder=str, deploy_folder=str) -> None:
+        self.selected_conversion_list = list_convert
+        self.texture_assets_database = texture_assets_database
+        self.sc_folder = sc_folder
+        self.deploy_folder = deploy_folder
+        self.write_texture()
+
+    def write_texture(self) -> None:
+        """
+        Clean the Selected Items List to fit the following logic:
+        Parent->Child (Model Object to Convert)
+        SuperParent->Parent->Child (Model Object to Convert) ==> This is used in CutScenes and Characters list due to the nesting
+        """
+        texture_data = self.get_textures_data_and_info(selection=self.selected_conversion_list)
+        convert_to_png = self.convert_to_png(texture_final_dict=texture_data)
+
+    def get_textures_data_and_info(self, selection=list) -> tuple[dict, str, list]:
+        """
+        Get current Texture Data:\n
+        Will grab the Data needed, based on the self.selected_conversion_list [Selections made by user]\n
+        Example of Nesting:
+        Menu Textures -> Ending Credits
+        this also impact to the nesting in the Dictionary which contains the Data.
+        """
+        texture_data_dict: dict = {}
+        nesting_folders: list = []
+
+        parent_name = selection[0].replace(' ', '_')
+        texture_group_name = selection[1]
+
+        """
+        Asset Storage: [Type of Storages] Single-File or FOLDER.
+        If Single-File (just work with a single TIM File)
+        If FOLDER (Is a folder with a lot of Texture Files)
+        """
+        get_texture_parent = self.texture_assets_database.get(f'{parent_name}')
+        get_texture_pack = get_texture_parent.get(f'{texture_group_name}')
+        get_textures_folder = get_texture_pack.get('TextureFolder')
+        get_asset_storage = get_texture_pack.get('AssetStorage')
+        get_textures_file = get_texture_pack.get('Textures')
+
+        texture_type: str = ''
+        if parent_name == 'Skyboxes':
+            texture_type = 'MCQ'
+        else:
+            texture_type = 'TIM'
+        
+        nesting_folders = f'{parent_name}, {texture_group_name}'
+
+        texture_model_specs: dict = {}
+        if get_asset_storage == 'Single-File':
+            clean_file_name = get_textures_file.replace('[', '').replace(']', '').replace('\'', '').strip()
+            file_list = [clean_file_name]
+            if get_textures_folder == clean_file_name: # This are the files placed in Root DRGN0.BIN
+                textures_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN'
+                texture_model_specs = {'Format': texture_type, 'Path': textures_path, 'Files': file_list}
+            else: # This seems to be only the Skyboxes MCQ lol
+                textures_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{get_textures_folder}'
+                texture_model_specs = {'Format': texture_type, 'Path': textures_path, 'Files': file_list}      
+        else:
+            texture_files = get_textures_file.replace('[', '').replace(']', '').replace('\'', '').strip().split(', ')
+            textures_path = f'{self.sc_folder}\\SECT\\DRGN0.BIN\\{get_textures_folder}'
+            texture_model_specs = {'Format': texture_type, 'Path': textures_path, 'Files': texture_files}
+        
+        texture_data_dict = {'Name': texture_group_name, 'FolderNesting': nesting_folders, 'Texture': texture_model_specs}
+        
+        return texture_data_dict
+
+    def convert_to_png(self, texture_final_dict=dict) -> str:
+        file_name = texture_final_dict.get('Name')
+        folder_nesting = texture_final_dict.get('FolderNesting')
+        texture_specs = texture_final_dict.get('Texture')
+
+        # Start Conversion
+        # Binary to PNG file
+        texture_list_to_convert = texture_specs.get('Files')
+        texture_path = texture_specs.get('Path')
+        texture_format = texture_specs.get('Format')
+        for current_texture in texture_list_to_convert:
+            current_path = f'{texture_path}\\{current_texture}'
+            texture_dict = {f'Format': texture_format, 'Path': current_path}
+            if (current_texture == '6666') or (current_texture == '6665'):
+                get_embedded_tims = self.handle_embedded_tims(file_path=current_path, file_name=current_texture)
+                for this_embedded_tim in get_embedded_tims:
+                    this_embedded_tim_data = get_embedded_tims.get(f'{this_embedded_tim}')
+                    processed_data_texture = asunder_binary_data.Asset(bin_to_split=this_embedded_tim_data)
+                    new_nesting = f'{folder_nesting}' #, {current_texture}'
+                    new_folder_textures = folder_handler.TextureFolder(deploy_folder_path=self.deploy_folder, file_nesting=new_nesting, file_name=file_name)
+                    png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=texture_format)
+            else:
+                file_texture_bin = binary_to_dict.BinaryToDict(bin_file_to_dict=texture_dict)
+                processed_data_texture = asunder_binary_data.Asset(bin_to_split=file_texture_bin.bin_data_dict)
+                new_nesting = f'{folder_nesting}' #, {current_texture}'
+                new_folder_textures = folder_handler.TextureFolder(deploy_folder_path=self.deploy_folder, file_nesting=new_nesting, file_name=file_name)
+                png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=texture_format)
+        
+        return file_name
+    
+    def handle_embedded_tims(self, file_path=str, file_name=str) -> dict:
+        """
+        Handle Embedded TIMs:\n
+        This is a special handling for very few Textures which for some reason\n
+        had a single file and inside are full of TIM files.\n
+        At the moment files 6665 and 6666, inside DRGN0.bin
+        """
+        tims_embedded: dict = {}
+
+        if file_name == '6666':
+            with open(file_path, 'rb') as embedded_tims:
+                read_all_tims = embedded_tims.read()
+                this_tim = read_all_tims[57116:]
+                this_data = {'Format': 'TIM', 'Data': [this_tim]}
+                tims_embedded.update({f'EmbeddedTim': this_data})
+                embedded_tims.close()
+        
+        elif file_name == '6665':
+            with open(file_path, 'rb') as embedded_tims:
+                read_all_tims = embedded_tims.read()                
+                tim_bin_0 = read_all_tims[0 : 25088]
+                this_data_0 = {'Format': 'TIM', 'Data': [tim_bin_0]}
+                tims_embedded.update({f'EmbeddedTim0': this_data_0})
+
+                tim_bin_1 = read_all_tims[25088 : 33760]
+                this_data_1 = {'Format': 'TIM', 'Data': [tim_bin_1]}
+                tims_embedded.update({f'EmbeddedTim1': this_data_1})
+
+                tim_bin_2 = read_all_tims[33760 : 66656]
+                this_data_2 = {'Format': 'TIM', 'Data': [tim_bin_2]}
+                tims_embedded.update({f'EmbeddedTim2': this_data_2})
+                embedded_tims.close()
+        
+        return tims_embedded
