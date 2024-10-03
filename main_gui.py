@@ -330,8 +330,8 @@ if __name__ == '__main__':
     absolute_path_current = os.path.abspath(os.getcwd())
     absolute_path_config = f'{absolute_path_current}\\Resources\\Manager.config'
     absolute_path_databases = f'{absolute_path_current}\\Databases'
-    background_image = f'{absolute_path_current}\\Resources\\Ruff_GUI.png'.replace('\\', '/')
-    icon_app = f'{absolute_path_current}\\Resources\\DD_Eye.ico'
+    background_image = f'{absolute_path_current}\\Resources\\main.png'.replace('\\', '/')
+    icon_app = f'{absolute_path_current}\\Resources\\Dragoon_Eyes.ico'
     app = QApplication(sys.argv)
     init_data = config_handler.ConfigurationHandler(option_file=absolute_path_config)
     build_database = database_handler.DatabaseHandler(database_path=absolute_path_databases)
