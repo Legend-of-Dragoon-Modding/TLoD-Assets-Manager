@@ -55,7 +55,7 @@ Monoxide, thanks a lot for making Severed Chains, also to helping me out underst
 
 TheFlyingZamboni, thanks a lot mate for giving the Texture code snippets and also for helping me understand how it works!.
 
-StackOverflow Comunnity in general. Since i look some solutions for stuff that i need to do in this code.
+StackOverflow Community in general. Since i look some solutions for stuff that i need to do in this code.
 
 All rights reserved to their respective owners, you can check in the code the refereces for them!.
 
