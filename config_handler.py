@@ -43,35 +43,41 @@ class ConfigurationHandler:
             ConfigurationHandler.write_config_file(config_file_path=self.option_file, configuration_dict=emergency_dict)
             exit()
         
-        header_type = database_from_string_to_list[0] # Loading this just in case that anytime will came usable
-        first_run_flag = database_from_string_to_list[1].replace(' ', '').replace('\n','').split('=')
-        resolution_x = database_from_string_to_list[2].replace(' ', '').replace('\n','').split('=')
-        resolution_y = database_from_string_to_list[3].replace(' ', '').replace('\n','').split('=')
-        severed_chains_folder = database_from_string_to_list[4].replace(' ', '').replace('\n','').replace('/', '\\').split('=')
-        deploy_folder = database_from_string_to_list[5].replace(' ', '').replace('\n','').replace('/', '\\').split('=')
+        header_type_complete_string = database_from_string_to_list[0] # Loading this just in case that anytime will came usable
+        first_run_flag_complete_string = database_from_string_to_list[1].split('=')
+        resolution_x_complete_string = database_from_string_to_list[2].split('=')
+        resolution_y_complete_string = database_from_string_to_list[3].split('=')
+        severed_chains_folder_complete_string = database_from_string_to_list[4].split('=')
+        deploy_folder_complete_string = database_from_string_to_list[5].split('=')
+        
+        first_run_flag = first_run_flag_complete_string[1].replace(' ', '').replace('\n','')
+        resolution_x = resolution_x_complete_string[1].replace(' ', '').replace('\n','')
+        resolution_y = resolution_y_complete_string[1].replace(' ', '').replace('\n','')
+        severed_chains_folder = severed_chains_folder_complete_string[1].strip().replace('\n','').replace('/', '\\')
+        deploy_folder = deploy_folder_complete_string[1].strip().replace('\n','').replace('/', '\\')
 
         if (first_run_flag[1] == 'True') or (first_run_flag[1] == f''):
             start_up_dialog = QMessageBox.information(None, f'FIRST START-UP', f'We will do a start-up configuration\nplease follow the steps', QMessageBox.StandardButton.Ok)
             self.option_dict['First_Run'] = 'False'
         
-        if resolution_x[1].isdigit():
-            self.option_dict['SizeX'] = resolution_x[1]
+        if resolution_x.isdigit():
+            self.option_dict['SizeX'] = resolution_x
         else:
             self.option_dict['SizeX'] = 1280
         
-        if resolution_y[1].isdigit():
-            self.option_dict['SizeY'] = resolution_y[1]
+        if resolution_y.isdigit():
+            self.option_dict['SizeY'] = resolution_y
         else:
             self.option_dict['SizeY'] = 720
         
-        if severed_chains_folder[1] != f'None':
-            self.option_dict['SC_Folder'] = severed_chains_folder[1]
+        if severed_chains_folder != f'None':
+            self.option_dict['SC_Folder'] = severed_chains_folder
         else:
             severed_chains_files_path = ConfigurationHandler.select_sc_folder()
             self.option_dict['SC_Folder'] = severed_chains_files_path
             
-        if deploy_folder[1] != f'None':
-            self.option_dict['Deploy_Folder'] = deploy_folder[1]
+        if deploy_folder != f'None':
+            self.option_dict['Deploy_Folder'] = deploy_folder
         else:
             indicate_deploy_folder = ConfigurationHandler.select_deploy_folder()
             self.option_dict['Deploy_Folder'] = indicate_deploy_folder
