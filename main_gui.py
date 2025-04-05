@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
         self.about_window.setMinimumSize(640, 360)
         # Settings for the About Window and Layout
         self.about_window.setModal(True)
-        self.about_window.setWindowTitle('About TLoD Assets Manager Beta v0.1')
+        self.about_window.setWindowTitle('About TLoD Assets Manager Beta v0.2')
         self.about_window.setLayout(about_window_layout)
         # Settings for the Labels
         about_label_1.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -339,5 +339,5 @@ if __name__ == '__main__':
         raise RuntimeError()
     init_data = config_handler.ConfigurationHandler(option_file=absolute_path_config)
     build_database = database_handler.DatabaseHandler(database_path=absolute_path_databases)
-    window = MainWindow(title='TLoD Assets Manager Beta v0.1', init_config=init_data.option_dict, init_config_path=absolute_path_config, assets_database=build_database.full_database, icon=icon_app, bg_img=background_image)
+    window = MainWindow(title='TLoD Assets Manager Beta v0.2', init_config=init_data.option_dict, init_config_path=absolute_path_config, assets_database=build_database.full_database, icon=icon_app, bg_img=background_image)
     sys.exit(app.exec())
