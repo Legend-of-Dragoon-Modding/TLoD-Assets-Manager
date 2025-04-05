@@ -3,13 +3,14 @@
 Database Handler:
 Handle Database file, pre-processing before GUI Start
 There are Four Database Types:
-Battle, DEFF, Misc, SubMap, Textures Only, World Map.
+Battle, DEFF, SubMap, Textures Only, World Map.
 
-Copyright (C) 2024 DooMMetaL
+Copyright (C) 2025 DooMMetaL
 
 """
 import os
 from collections import Counter
+import random
 import csv
 from PyQt6.QtWidgets import QMessageBox
 
@@ -21,7 +22,7 @@ class DatabaseHandler:
         """
         self.self = DatabaseHandler
         self.database_path = database_path
-        self.full_database: dict = {'Battle': {}, 'DEFF': {}, 'Misc': {}, 'SubMaps': {}, 'Textures Only': {}, 'World Map': {}}
+        self.full_database: dict = {'Battle': {}, 'DEFF': {}, 'SubMaps': {}, 'Textures Only': {}, 'World Map': {}}
         self.process_csv_file()
     
     def process_csv_file(self) -> None:
@@ -32,7 +33,6 @@ class DatabaseHandler:
 
         main_folder_databases: list[str] = []
         deff_folder_databases: list[str] = []
-        misc_folder_databases: list[str] = []
         submap_folder_databases: list[str] = []
         texture_only_folder_databases: list[str] = []
         world_map_folder_databases: list[str] = []
@@ -44,22 +44,15 @@ class DatabaseHandler:
                     main_folder_databases.append(each_database_full_path)
                 elif 'DEFF' in each_database_full_path:
                     deff_folder_databases.append(each_database_full_path)
-                elif 'Misc' in each_database_full_path:
-                    misc_folder_databases.append(each_database_full_path)
                 elif 'SubMaps' in each_database_full_path:
                     submap_folder_databases.append(each_database_full_path)
                 elif 'Textures_Only' in each_database_full_path:
                     texture_only_folder_databases.append(each_database_full_path)
                 elif 'World_Map' in each_database_full_path:
-                    world_map_folder_databases.append(each_database_full_path)                
-                else:
-                    error_database_type = QMessageBox.critical(None, 'CRITICAL ERROR!!', f'FATAL!!:\nNot recognized Database Type: {each_database_full_path}, \nPlease, report this error', QMessageBox.StandardButton.Ok)
-                    raise RuntimeError()
+                    world_map_folder_databases.append(each_database_full_path)
         
         # FINAL STRUCTURE -> {'Battle_Stages': {}, 'Bosses': {}, 'Characters': {}, 'CutScenes': {}, 'Enemies': {}, 'Tutorial': {}}
         battle_dict = self.process_file_from_folder(file_path_list=main_folder_databases, file_path_type='Battle')
-        # FINAL STRUCTURE -> {'Logo': {}}
-        misc_dict = self.process_file_from_folder(file_path_list=misc_folder_databases, file_path_type='Misc')
         # FINAL STRUCTURE -> {'South Serdio': {}, 'North Serdio': {}, 'Tiberoa': {}, 'Illisa Bay': {}, 'Mille Seseau': {}, 'Gloriano': {}, 'Death Frontier Desert': {}, 'World Map Complete': {}, 'Mini Dart': {}, 'Queen Fury': {}, 'Coolon': {}, 'Teleportation Glow': {}}
         # NOTE: The texture nesting from World Maps will be handled in the Converter directly
         world_map_dict = self.process_file_from_folder(file_path_list=world_map_folder_databases, file_path_type='WorldMap')
@@ -70,7 +63,7 @@ class DatabaseHandler:
         # FINAL STRUCTURE -> {'Bosses': {}, 'CutScenes': {}, 'Dragoon': {}, 'Enemies': {}, 'General': {}, 'Magic and Special Attacks': {}}
         deff_dict = self.process_file_from_folder_deff(file_path_list=deff_folder_databases)
 
-        self.full_database = {'Battle': battle_dict, 'DEFF': deff_dict, 'Misc': misc_dict, 'SubMaps': submaps_dict, 'Textures Only': texture_only_dict, 'World Map': world_map_dict}
+        self.full_database = {'Battle': battle_dict, 'DEFF': deff_dict, 'SubMaps': submaps_dict, 'Textures Only': texture_only_dict, 'World Map': world_map_dict}
     
     def process_file_from_folder(self, file_path_list=list[str], file_path_type=str) -> dict:
         """
@@ -125,6 +118,7 @@ class DatabaseHandler:
             with open(simple_path, 'r') as csv_file:
                 csv_read = csv.reader(csv_file)
                 for csv_data in csv_read:
+                    self.database_not_empty(check_data=csv_data, database_path=simple_path)
                     object_name = csv_data[0]
                     object_dict = self.csv_data_to_dict(csv_row=csv_data)
                     data_dict: dict = {f'{object_name}': object_dict}
@@ -144,36 +138,15 @@ class DatabaseHandler:
                 csv_nested_read: list[str] = []
                 with open(nested_path, 'r') as csv_nested_file:
                     # First i read the Custom CSV with a '!' as delimiter for Texture and main data (Since i don't like the idea of repeating the texture data over and over)
-                    read_custom_csv = csv_nested_file.read()
-                    # Split the total read in two chunks: Texture Data (to be used just one per dict) and the rest of data
-                    csv_nested_read = self.handle_special_csv(custom_csv=read_custom_csv)
+                    csv_read = csv.reader(csv_nested_file)
+                    for csv_data in csv_read:
+                        self.database_not_empty(check_data=csv_data, database_path=nested_path)
+                        object_name_nested = csv_data[0]
+                        object_dict_nested = self.csv_data_to_dict(csv_row=csv_data)
+                        data_dict_nested: dict = {f'{object_name_nested}': object_dict_nested}
+                        this_inner_dict_nested[f'{nested_subparent_name}'].update(data_dict_nested)
+                    database_to_process['Characters'].update(this_inner_dict_nested)
                     csv_nested_file.close()
-                
-                # Set a single Texture for all the Models/Animations
-                texture_action_and_path = csv_nested_read[0].split(',')
-                texture_path = texture_action_and_path[1]
-                this_inner_dict_nested[f'{nested_subparent_name}'].update({'Texture': texture_path}) # TODO Remove this?
-                
-                # This is the Character Models/Animations data
-                rest_of_csv = csv_nested_read[1].strip().split('\n')
-                for csv_single_row_data in rest_of_csv:
-                    manipulate_row = csv_single_row_data.replace(', ', '-')
-                    split_this_row = manipulate_row.split(',')
-                    action_name = split_this_row[0]
-                    model_path = split_this_row[1]
-                    model_file = split_this_row[2]
-                    passive_path = split_this_row[3]
-                    passive_files = split_this_row[4].replace('-', ', ')
-                    attack_path = split_this_row[5]
-                    attack_files = split_this_row[6].replace('-', ', ')
-
-                    object_dict_inner = {f'{action_name}': 
-                                         {'ModelFolder': model_path, 'ModelFile': model_file, 
-                                          'PassiveFolder': passive_path, 'PassiveFiles': passive_files, 
-                                          'AttackFolder': attack_path, 'AttackFiles': attack_files, 
-                                          'Textures': texture_path}}
-                    this_inner_dict_nested[f'{nested_subparent_name}'].update(object_dict_inner)
-                database_to_process['Characters'].update(this_inner_dict_nested)
 
             elif nested_parent_name == 'CutScenes':
                 this_inner_dict_nested_2: dict = {f'{nested_subparent_name}': {}}
@@ -181,6 +154,7 @@ class DatabaseHandler:
                 with open(nested_path, 'r') as csv_file_nested:
                     csv_read_nested = csv.reader(csv_file_nested)
                     for csv_data_nested in csv_read_nested:
+                        self.database_not_empty(check_data=csv_data_nested, database_path=nested_path)
                         object_name_nested = csv_data_nested[0]
                         object_dict_nested = self.csv_data_to_dict(csv_row=csv_data_nested)
                         data_dict_nested: dict = {f'{object_name_nested}': object_dict_nested}
@@ -265,6 +239,7 @@ class DatabaseHandler:
                         with open(this_cut_path_environment, 'r') as csv_file:
                             csv_read = csv.reader(csv_file)
                             for csv_data in csv_read:
+                                self.database_not_empty(check_data=csv_data, database_path=this_cut_path_environment)
                                 object_name = csv_data[0]
                                 object_dict = self.csvsubmap_data_to_dict(csv_row=csv_data)
                                 data_dict: dict = {f'{object_name}': object_dict}
@@ -275,6 +250,7 @@ class DatabaseHandler:
                             csv_read = csv.reader(csv_file)
                             objects_dict: dict = {}
                             for csv_data in csv_read:
+                                self.database_not_empty(check_data=csv_data, database_path=this_cut_path_objects)
                                 object_name = csv_data[0]
                                 object_dict = self.csvsubmap_data_to_dict(csv_row=csv_data)
                                 data_dict: dict = {f'{object_name}': object_dict}
@@ -314,11 +290,6 @@ class DatabaseHandler:
                         'AnimationFiles': animation_files, 'Textures': texture_files}
         
         return object_dict
-
-    def handle_special_csv(self, custom_csv=str) -> list[str]:
-        special_csv: list[str] = []
-        special_csv = custom_csv.split('!,,,,,')
-        return special_csv
     
     def process_database_from_textonly(self, file_path_list=list[str]) -> dict:
         texture_only_dict: dict = {'Menu_Textures': {}, 'Skyboxes': {}, 'THE_END': {}, 'WorldMap_GUI': {}, 'WorldMap_Thumbnails': {}}
@@ -331,6 +302,7 @@ class DatabaseHandler:
             with open(current_textonly_database, 'r') as csv_file:
                 csv_read = csv.reader(csv_file)
                 for csv_data in csv_read:
+                    self.database_not_empty(check_data=csv_data, database_path=current_textonly_database)
                     object_name = csv_data[0]
                     object_dict = self.csvtextonly_data_to_dict(csv_row=csv_data)
                     data_dict: dict = {f'{object_name}': object_dict}
@@ -356,111 +328,232 @@ class DatabaseHandler:
     def process_file_from_folder_deff(self, file_path_list=list[str]) -> dict:
         deff_database_files: dict = {'Bosses': {}, 'CutScenes': {}, 'Dragoon': {}, 'Enemies': {}, 'General': {}, 'Magic_and_Special_Attacks': {}}
 
-        root_files: list = []
-        rebuild_files: list = []
-        for list_of_deff_files in file_path_list:
-            if 'Rebuilding_Script' in list_of_deff_files:
-                rebuild_files.append(list_of_deff_files)
-            else:
-                root_files.append(list_of_deff_files)
-        
-        for root_database_file in root_files:
-            find_name_end_slash = root_database_file.rfind('\\')
-            find_name_end = root_database_file.find('.csv')
-            root_name = root_database_file[(find_name_end_slash + 1): find_name_end]
-            
-            database_data: dict = {}
-            for rebuild_file in rebuild_files:
-                if root_name in rebuild_file:
-                    find_start_drgn_number = rebuild_file.rfind('\\')
-                    rebuild_file_name = rebuild_file[find_start_drgn_number + 1:]
-                    find_underscore_number = rebuild_file_name.find('_')
-                    deff_drgn_number = rebuild_file_name[:find_underscore_number]
-                    
-                    with open(root_database_file, 'r') as root_csv:
-                        csv_read = csv.reader(root_csv)
-                        for csv_data in csv_read:
-                            if deff_drgn_number == csv_data[2]:
-                                drgn_deff_name = csv_data[0]
-                                drgn_deff_texture = csv_data[1]
-                                drgn_deff_file = csv_data[2]
-                                drgn_deff_extra_textures_flag = csv_data[3]
-                                drgn_deff_extra_textures_folder = csv_data[4]
-                                rebuild_dict = self.rebuild_file_builder(rebuild_file_path=rebuild_file)
-                                compiled_deff_data = {f'{drgn_deff_name}': {'Textures': drgn_deff_texture, 'File Path': drgn_deff_file, 
-                                                      'Extra Textures Flag': drgn_deff_extra_textures_flag, 'Extra Textures Folder': drgn_deff_extra_textures_folder, 
-                                                      'Rebuild Sequence': rebuild_dict}}
-                                database_data.update(compiled_deff_data)
-                        root_csv.close()
-            deff_database_files[f'{root_name}'].update(database_data)
+        for deff_file in file_path_list:
+            if 'Bosses' in deff_file:
+                pass
+            elif 'CutScenes' in deff_file:
+                pass
+            elif 'Dragoon_Characters' in deff_file:
+                if '-Objects' not in deff_file:
+                    # Here i filter Sequence CSV of Objects from the Sequence, since the sequence file would be loaded only when a DEFF is selected
+                    # The Object Loader would be in a separated Class
+                    dragoon_sequence = self.rebuild_deff_sequence(deff_file)
+                    deff_database_files['Dragoon'].update(dragoon_sequence)
+            elif 'Enemies' in deff_file:
+                pass
+            elif 'General' in deff_file:
+                pass
+            elif 'Magic_and_Special_Attacks' in deff_file:
+                pass
 
         return deff_database_files
     
-    def rebuild_file_builder(self, rebuild_file_path=str) -> dict:
+    def rebuild_deff_sequence(self, rebuild_file_path=str) -> dict:
+        """
+        Rebuild DEFF Sequence:\n
+        Pretty much as the name says, rebuilds a DEFF Sequence, based on CSV files,\n
+        which acts as a kind of script file, but human readable.\n
+        Since much of this files are written by hand could contain some errors.
+        """
+        
+        """
+        First understanding that getting Data from the Script files is not an easy task, even people like Monoxide, TheFlyingZamboni, Zychronix, Icarus, struggles a lot
+        to simply follow up whats going on (and seriously i'm not even closer to their understanding about this files), 
+        this because the Script Files are not necessarily 'linear'. So getting the exact frame in which an effect start or end is very complex at best (impossible in other words).
+        What i do in this files is comparing some timing/frame data from the Scripts Versus a 15~20~24 FPS Recording (in which i dump each frame into images) and checking
+        frame by frame when a effect start to appear or end (disappear).
+        Also will using as support value VSyncDivider, which will dictate in how to place the Keyframes in the timeline, but is the Frame Rate dictated to be run by the Engine.
+        For the rest of Data I just follow what file is loading.
+        For sake of easy reading and maintainance I opted to split the "Script" into two concepts.
+        First Concept is "Sequecence File", Sequence file is a csv which contains:
+        --------------------------------------------------
+        Name - Objects Folder - Texture Folder - Total Frames - VSyncDivider - Extra Texture Folder - AnimatedTMDBool - StaticTMDBool - ParticleBool
+        {Extra Texture Folder is the general folders in which this DEFF Stores it's Extra Textures}
+        {AnimatedTMDBool - StaticTMDBool - ParticleBool: This way i can trace prior if creating folders is needed, also avoid Conversion if in General do not exist this kind of Objects inside THIS DEFF}
+        0_DEFFObject0
+        1_DEFFObject1
+        n_DEFFObjectn
+        --------------------------------------------------
+        Second concept is "DEFF Object Properties File", DEFF Object Properties File have the same name as referred in Sequence File, 
+        So for example we say the last DEFFObject is the n_DEFFObjectn, and the name of the file would be "n_DEFFObjectn.csv"
+        This files contains the properties of the Object itself and have General Properties and Script Animation.
+        Objects could be: AnimatedTMD, StaticTMD, Particles.
+        --------------------------------------------------
+        """
         rebuild_file: dict = {}
 
         raw_rebuild_file: list = []
-        with open(rebuild_file_path, 'r') as script_rebuild_file:
-            read_rebuild_file = script_rebuild_file.readlines()
-            for text_string in read_rebuild_file:
-                if text_string != f'\n':
-                    raw_rebuild_file.append(text_string)
-            script_rebuild_file.close()
+        try:
+            with open(rebuild_file_path, 'r') as csv_script:
+                csv_file = csv.reader(csv_script)
+                for csv_data in csv_file:
+                    self.database_not_empty(check_data=csv_data, database_path=rebuild_file_path)
+                    raw_rebuild_file.append(csv_data)
+                csv_script.close()
+        except RuntimeError:
+            deff_db_error = f'{rebuild_file_path}\nCannot be loaded, check if the file exist\nExiting tool to avoid further errors...'
+            error_deff_csv_loading = QMessageBox.critical(None, 'CRITICAL ERROR!!', deff_db_error, QMessageBox.StandardButton.Ok)
+            exit()
         
-        deff_name: str = f''
-        deff_path: str = f''
-        deff_animation_frames: str = f''
-        deff_sequence: dict = {}
+        row_count = len(raw_rebuild_file)
 
-        transform_this_to_list_int = ['rel_pos', 'rel_rot', 'rel_scale', 'rel_col', 'rel_scale_color', 'scale_factor']
-        transform_this_to_int = ['set_z', 'lifespan', 'count']
+        deff_name:str = ''
+        deff_sequence_number_as_str: str = ''
 
-        for rebuild_text_string in raw_rebuild_file:
-            rebuild_text_string_clean = rebuild_text_string.strip()
-            if 'deff_name' in rebuild_text_string_clean:
-                deff_name = rebuild_text_string_clean.replace(f'deff_name: ', '')
-            elif 'deff_path' in rebuild_text_string_clean:
-                deff_path = rebuild_text_string_clean.replace(f'deff_path: ', '')
-            elif 'deff_animation_frames' in rebuild_text_string_clean:
-                deff_animation_frames = rebuild_text_string_clean.replace(f'deff_animation_frames: ', '')
+        deff_sequence: dict = {'Name': None, 'Folder': None, 'Texture Folder': None, 'Total Frames': None, 'VSyncDivider': None, 
+                               'Extra Textures': None, 'Sequence': None, 'Sequence Folder': None, 
+                               'AnimatedTMDBool': None, 'StaticTMDBool': None, 'ParticleBool': None}
+        
+        sequence: list = []
+        for this_row_number in range(0, row_count):
+            this_row = raw_rebuild_file[this_row_number]
+            if this_row_number == 0:
+                deff_name = this_row[0] # The name to generate the last Dict, so once you packed in the nested dict don't get replaced
+                deff_sequence_number_as_str = this_row[1]
+                deff_sequence['Name'] = this_row[0]
+                deff_sequence['Folder'] = this_row[1]
+                deff_sequence['Texture Folder'] = this_row[2]
+                deff_sequence['Total Frames'] = this_row[3]
+                deff_sequence['VSyncDivider'] = StringIntegerList.convert_integer(convert_int=this_row[4])
+                deff_sequence['Extra Textures'] = this_row[5]
+                deff_sequence['AnimatedTMDBool'] = this_row[6]
+                deff_sequence['StaticTMDBool'] = this_row[7]
+                deff_sequence['ParticleBool'] = this_row[8]
             else:
-                split_rebuild_string = rebuild_text_string_clean.split(':')
-                object_or_action = split_rebuild_string[0]
-                split_properties = split_rebuild_string[1].split('-')
-                sequence_properties: dict = {}
-                for sequence_property in split_properties:
-                    if "(" in sequence_property:
-                        sequence_property_clean = sequence_property.strip()
-                        find_name_start = sequence_property_clean.find('(')
-                        find_name_end = sequence_property_clean.find(')')
-                        name_property = sequence_property_clean[:find_name_start]
-                        property_data_string = sequence_property_clean[find_name_start + 1: find_name_end]
-                        sequence_properties.update({f'{name_property}': property_data_string})
-                    elif "{" in sequence_property:
-                        sequence_property_clean = sequence_property.strip()
-                        find_name_start = sequence_property_clean.find('{')
-                        find_name_end = sequence_property_clean.find('}')
-                        name_property = sequence_property_clean[:find_name_start]
-                        property_data_to_int = sequence_property_clean[find_name_start + 1: find_name_end]
-                        property_data_int = StringInteger.transform_string_to_int(int_string=property_data_to_int)
-                        sequence_properties.update({f'{name_property}': property_data_int})
-                    elif "[" in sequence_property:
-                        sequence_property_clean = sequence_property.strip()
-                        find_name_start = sequence_property_clean.find('[')
-                        find_name_end = sequence_property_clean.find(']')
-                        name_property = sequence_property_clean[:find_name_start]
-                        property_data_string_to_list = sequence_property_clean[find_name_start + 1: find_name_end]
-                        property_data_list = StringInteger.transform_string_to_list(list_string=property_data_string_to_list)
-                        sequence_properties.update({f'{name_property}': property_data_list})
+                add_this_sequence = this_row[0]
+                sequence.append(add_this_sequence)
+        deff_sequence['Sequence'] = sequence
 
-                deff_sequence.update({f'{object_or_action}': sequence_properties})
+        # Now i need to setup the Sequence Folder
+        find_last_slash_from_path = rebuild_file_path.rfind('\\')
+        database_clear_path = rebuild_file_path[0:find_last_slash_from_path]
+        find_first_slash_from_sequence_number = deff_sequence_number_as_str.find('/')
+        sequence_number_clear = deff_sequence_number_as_str[0:find_first_slash_from_sequence_number]
         
-        rebuild_file = {f'DEFF Name': deff_name, 'DEFF Path': deff_path, 'DEFF Anim Frames': deff_animation_frames, 'DEFF Anim Seq': deff_sequence}
+        # Now we join both Strings to get the actual Sequence Folder
+        joined_sequence_path = f'{database_clear_path}\\{sequence_number_clear}-Objects\\'
+        deff_sequence['Sequence Folder'] = joined_sequence_path
+
+        rebuild_file = {f'{deff_name}': deff_sequence}
+
         return rebuild_file
 
-class StringInteger:
+    def database_not_empty(self, check_data=list, database_path=str):
+        """
+        Database Not Empty:\n
+        Check if a Database is not empty.\n
+        in case of an Empty Database, must crash.
+        """
+        if len(check_data) == 0:
+            database_is_empty = f'Database: {database_path}, have Empty Data.\nCheck if Database is placed as intended or have some data in it.\nExiting tool to avoid further errors...'
+            error_database_type = QMessageBox.critical(None, 'CRITICAL ERROR!!', database_is_empty, QMessageBox.StandardButton.Ok)
+            exit()
+
+class DeffObjectDatabase:
+    def __init__(self, current_object, sequence_folder=str) -> dict:
+        """DEFF Object Database: Holds properties of each object from the current DEFF"""
+        self.current_object = current_object
+        self.sequence_folder = sequence_folder
+        self.current_object_dict: dict = {}
+        self.process_object_csv()
+
+    def process_object_csv(self) -> None:
+        """
+        Process Object CSV:\n
+        Will process the csv file, which is created in this way:\n
+        General Properties: Are the properties which are spread across all the Object Sequence, no matter the timing of it.\n
+        ===============================================================================================================================\n
+        FILE - FILETYPE - TEXTURES - ANIM FILES - PARENT - FRAME START - FRAME END - PARTICLE TYPE - COUNT - SIMULATION TYPE - LIFESPAN
+        ===============================================================================================================================\n
+        NOTE: Textures could be more than 1, will depend on the Extra Textures folder if != to NONE
+        After will be the Scripting Animation: This properties are changing across Object Sequences, sometimes in DEFF Devs changed Position, Rotation, Translation, etc.\n
+        Script Animation Types included: Relative Position, Relative Rotation, Relative Scale, Relative Color.
+        First will come the Script Animation Header telling How Many Script Animations are in this Object Sequence:\n
+        =================\n
+        ScriptAnimation N {Where N is a Unsigned Integer | NONE}
+        =================\n
+        Then start the Scripted Animations Types in this fashion:\n
+        ==========================================================\n
+        ScriptAnimationType{Name} - Parent{Name} - Property{Value}\n
+        ==========================================================
+        Working in this way, if some of the properties is variable, is taken as a Script Animation.
+        Anyway, Script Animation would be apply only If we are re-creating the whole sequence, at the moment that is work in progress.
+        """
+        current_object_csv_path = f'{self.sequence_folder}{self.current_object}.csv'
+
+        raw_objects_data_dict: dict = {}
+        try:
+            with open(current_object_csv_path, 'r') as csv_file:
+                csv_read = csv.reader(csv_file)
+                next(csv_read) # Here we jump the very first row, since is not needed
+                raw_current_object: list = []
+                for current_row in csv_read:
+                    this_row: list = []
+                    for current_column in current_row:
+                        if current_column != '': # Here i take out the "blank" spaces from csv file
+                            this_row.append(current_column)
+                    raw_current_object.append(this_row)
+                this_object_dict = {f'{self.current_object}': raw_current_object}
+                raw_objects_data_dict.update(this_object_dict)
+                csv_file.close()
+        
+        except RuntimeError:
+            deff_db_error = f'{current_object_csv_path}\nCannot be loaded, check if the file exist\nExiting tool to avoid further errors...'
+            print(f'CRITICAL ERROR!!! - {deff_db_error}')
+            exit()
+        
+        current_object_dict: dict = {'Name': None, 'File': None, 'Filetype': None, 'Texture': None, 'ExtraTextures': None, 'Anim Files': None, 'Parent': None, 'Frame Start': None, 'Frame End': None, 'Particle Type': None, 'Count': None, 'Simulation Type': None, 'Lifespan': None, 'Script Animation': None}
+        for current_object_name in raw_objects_data_dict:
+            current_object_list = raw_objects_data_dict.get(f'{current_object_name}')
+            current_object_dict['Name'] = current_object_name
+
+            general_properties_row = current_object_list[0]
+            current_object_dict['File'] = general_properties_row[0]
+            current_object_dict['Filetype'] = general_properties_row[1]
+            if 'EXTRA:' not in general_properties_row[2]:
+                current_object_dict['Texture'] = general_properties_row[2].split(', ')
+            else:
+                #TODO: Check that Extra Textures only loaded with now 'Base' Textures with it, in case that this happens, redirect the base textures to 'Texture' Key
+                find_extra = general_properties_row[2].find('EXTRA:')
+                extra_texture_files = general_properties_row[2]
+                extra_texture_files_isolated = extra_texture_files[(find_extra + 6):].split(', ')
+                current_object_dict['Texture'] = ['EXTRA']
+                current_object_dict['ExtraTextures'] = extra_texture_files_isolated
+            current_object_dict['Anim Files'] = general_properties_row[3].split(', ')
+            current_object_dict['Parent'] = general_properties_row[4]
+            current_object_dict['Frame Start'] = StringIntegerList.convert_integer(convert_int=general_properties_row[5])
+            current_object_dict['Frame End'] = StringIntegerList.convert_integer(convert_int=general_properties_row[6])
+            current_object_dict['Particle Type'] = general_properties_row[7]
+            current_object_dict['Count'] = StringIntegerList.transform_string_to_int(int_string=general_properties_row[8])
+            current_object_dict['Simulation Type'] = general_properties_row[9]
+            current_object_dict['Lifespan'] = general_properties_row[10]
+
+            script_animation_properties = current_object_list[1]
+            script_animation_number = StringIntegerList.convert_integer(convert_int=script_animation_properties[1])
+
+            script_animation_rows = current_object_list[2:]
+
+            if len(script_animation_rows) != script_animation_number:
+                script_animation_error_msg = f'File: {current_object_name}, had a Script Animation Number discrepancy.\nExpected: {script_animation_number} - Obtained: {len(script_animation_rows)}\nClosing tool to avoid further errors...'
+                error_script_anim_number = QMessageBox.critical(None, 'CRITICAL ERROR!!', script_animation_error_msg, QMessageBox.StandardButton.Ok)
+                print(script_animation_error_msg)
+                exit()
+
+            script_animations_dict: dict = {}
+            for current_script_animation_number in range(0, script_animation_number):
+                current_script_animation = script_animation_rows[current_script_animation_number]
+                this_script_animation = {f'ScriptAnimation_{current_script_animation_number}': current_script_animation}
+                script_animations_dict.update(this_script_animation)
+            
+            script_animation_array: dict = {'ScriptAnimNumber': script_animation_number, 'ScriptAnimData': script_animations_dict}
+            current_object_dict['Script Animation'] = script_animation_array
+        
+        self.current_object_dict = current_object_dict
+            
+
+class StringIntegerList:
     def __init__(self) -> None:
-        self.self = StringInteger
+        self.self = StringIntegerList
 
     @staticmethod
     def transform_string_to_list(list_string=str) -> list:
@@ -468,12 +561,16 @@ class StringInteger:
         Take a format '[0x00000000, 0x00000000, 0x00000000]' and convert it into a List of Integers
         """
         string_to_list: list = []
+        
         split_string = list_string.split(', ')
         
         for integer_string in split_string:
-            new_int = int(integer_string, 0)
-            check_int = StringInteger.check_sign(check_int=new_int)
-            string_to_list.append(check_int)
+            if integer_string != 'RAND':
+                new_int = int(integer_string, 0)
+                check_int = StringIntegerList.check_sign(check_int=new_int)
+                string_to_list.append(check_int)
+            else:
+                pass
         return string_to_list
     
     @staticmethod
@@ -482,9 +579,16 @@ class StringInteger:
         Take a format '{0x00000000}' and convert it into a Integer
         """
         string_to_int: int = 0
-        new_int = int(int_string, 0)
-        check_int = StringInteger.check_sign(check_int=new_int)
-        string_to_int = check_int
+        if 'RANDOM' in int_string:
+            new_string = int_string.replace('RANDOM', '').replace('(', '').replace(')', '')
+            split_numbers = new_string.split(',')
+            number_a = int(split_numbers[0])
+            number_b = int(split_numbers[1])
+            string_to_int = random.randint(number_a, number_b)
+        else:
+            new_int = int(int_string, 0)
+            check_int = StringIntegerList.check_sign(check_int=new_int)
+            string_to_int = check_int
 
         return string_to_int
     
@@ -502,3 +606,13 @@ class StringInteger:
             this_int = check_int
         
         return this_int
+    
+    @staticmethod
+    def convert_integer(convert_int=str) -> int:
+        """
+        Convert Integer:\n
+        String data is converted into Integer.
+        """
+        final_int = int(convert_int)
+
+        return final_int

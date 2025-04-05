@@ -1,2 +1,1 @@
-Texture,characters/kongol/textures/dragoon!,,,,,
-Idle,/characters/kongol/models/dragoon,32,characters/kongol/models/dragoon,"[0, 1, 14, 29]",None,None
+Idle,/characters/kongol/models/dragoon,32,characters/kongol/models/dragoon,"[0, 1, 14, 29]",None,None,characters/kongol/textures/dragoon

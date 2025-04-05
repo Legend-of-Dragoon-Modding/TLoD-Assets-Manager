@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+NONE,GeneratedParticle,NONE,NONE,Main,76,286,0xfff03,0x1e,FloorDust,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0xfffffe0c, 0x0, 0xfffffed4",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Scale,"0x400, 0x400, 0x400",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

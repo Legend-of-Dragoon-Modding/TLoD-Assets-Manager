@@ -1,0 +1,8 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+15,ParticleFile,16,NONE,DartNormal,434,522,0xd00,0x5,CentreNonUniformExplosion,0x18
+ScriptAnimation,5,,,,,,,,,
+Relative Position,DartNormal,"0xfffffe70, 0x0, 0xffffff9c",,,,,,,,
+Relative Rotation,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Scale,Main,"0x400, 0x400, 0x400",,,,,,,,
+Relative Color,Main,"0x80, 0x80, 0x80",,,,,,,,
+scriptAddConstantColourScalerAttachment,Main,"0x0, 0x0, 0x0",0x18,,,,,,,

@@ -16,7 +16,7 @@ import os
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QStatusBar, QGridLayout, QWidget, QScrollBar, QTreeView, 
                              QListWidget, QGroupBox, QLabel, QPushButton, QCheckBox, QComboBox, QMessageBox, QProgressBar)
 from PyQt6.QtGui import QIcon, QKeySequence, QAction, QStandardItemModel, QStandardItem, QColor, QFont
-from PyQt6.QtCore import QObject, Qt, QThread, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import Qt, QObject, QThread, pyqtSlot, pyqtSignal
 import database_handler
 from conversion_interfaces import BattleConversionInterface
 

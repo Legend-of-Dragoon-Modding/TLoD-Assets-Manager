@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+5,StaticTMD,4,NONE,AlbertDragoon,330,525,0x3600,0x1,NONE,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0x0, 0xfffffff4, 0xfffff722",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x200",,,,,,,,,
+Relative Scale,"0xccc, 0xa14, 0xccc",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

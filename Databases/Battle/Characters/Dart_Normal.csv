@@ -1,10 +1,9 @@
-Texture,characters/dart/textures/combat!,,,,,
-Idle,/characters/dart/models/combat,32,characters/dart/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
-Double Slash,/characters/dart/models/combat,32,None,None,4031,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Volcano,/characters/dart/models/combat,32,None,None,4032,"[16, 17, 18, 19, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Burning Rush,/characters/dart/models/combat,32,None,None,4033,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Crush Dance,/characters/dart/models/combat,32,None,None,4034,"[16, 17, 18, 19, 20, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Madness Hero,/characters/dart/models/combat,32,None,None,4035,"[16, 17, 18, 19, 20, 21, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Moon Strike,/characters/dart/models/combat,32,None,None,4036,"[16, 17, 18, 19, 20, 21, 22, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Blazing Dynamo,/characters/dart/models/combat,32,None,None,4037,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Blazing Dynamo 2,/characters/dart/models/combat,32,None,None,4038,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+Idle,/characters/dart/models/combat,32,characters/dart/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None,characters/dart/textures/combat
+Double Slash,/characters/dart/models/combat,32,None,None,4031,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Volcano,/characters/dart/models/combat,32,None,None,4032,"[16, 17, 18, 19, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Burning Rush,/characters/dart/models/combat,32,None,None,4033,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Crush Dance,/characters/dart/models/combat,32,None,None,4034,"[16, 17, 18, 19, 20, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Madness Hero,/characters/dart/models/combat,32,None,None,4035,"[16, 17, 18, 19, 20, 21, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Moon Strike,/characters/dart/models/combat,32,None,None,4036,"[16, 17, 18, 19, 20, 21, 22, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Blazing Dynamo,/characters/dart/models/combat,32,None,None,4037,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat
+Blazing Dynamo 2,/characters/dart/models/combat,32,None,None,4038,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/dart/textures/combat

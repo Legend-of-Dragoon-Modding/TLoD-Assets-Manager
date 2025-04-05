@@ -1,10 +1,9 @@
-Texture,characters/miranda/textures/combat!,,,,,
-Idle,/characters/miranda/models/combat,32,characters/miranda/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
-Attack,/characters/miranda/models/combat,32,None,None,4095,"[16, 35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 1,/characters/miranda/models/combat,32,None,None,4096,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 2,/characters/miranda/models/combat,32,None,None,4097,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 3,/characters/miranda/models/combat,32,None,None,4098,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 4,/characters/miranda/models/combat,32,None,None,4099,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 5,/characters/miranda/models/combat,32,None,None,4100,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 6,/characters/miranda/models/combat,32,None,None,4101,"[35, 36, 39, 41, 47, 58, 59, 63]"
-No addition 7,/characters/miranda/models/combat,32,None,None,4102,"[35, 36, 39, 41, 47, 58, 59, 63]"
+Idle,/characters/miranda/models/combat,32,characters/miranda/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None,characters/miranda/textures/combat
+Attack,/characters/miranda/models/combat,32,None,None,4095,"[16, 35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 1,/characters/miranda/models/combat,32,None,None,4096,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 2,/characters/miranda/models/combat,32,None,None,4097,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 3,/characters/miranda/models/combat,32,None,None,4098,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 4,/characters/miranda/models/combat,32,None,None,4099,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 5,/characters/miranda/models/combat,32,None,None,4100,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 6,/characters/miranda/models/combat,32,None,None,4101,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat
+No addition 7,/characters/miranda/models/combat,32,None,None,4102,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/miranda/textures/combat

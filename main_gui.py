@@ -22,7 +22,7 @@ from battle_conversion_window import BattleConversionMainWindow
 from submap_conversion_window import SubMapConversionMainWindow
 from worldmap_conversion_window import WorldMapConversionMainWindow
 from texture_only_conversion_window import TextOnlyConversionMainWindow
-#from deff_conversion_window import DeffConversionMainWindow
+from deff_conversion_window import DeffConversionMainWindow
 
 class MainWindow(QMainWindow):
     def __init__(self, title=str, init_config=dict, init_config_path=str, assets_database=dict, icon=str, bg_img=str):
@@ -132,8 +132,7 @@ class MainWindow(QMainWindow):
         self.convert_submap_models_button.clicked.connect(self.submap_conversion_window)
         self.convert_worldmap_models_button.clicked.connect(self.worldmap_conversion_window)
         self.convert_texture_only_button.clicked.connect(self.textonly_conversion_window)
-        self.convert_deff_button.setDisabled(True)
-        #self.convert_deff_button.clicked.connect(self.deff_conversion_window)
+        self.convert_deff_button.clicked.connect(self.deff_conversion_window)
 
     def set_window_background(self):
         self.main_background_image.setStyleSheet("QWidget#BackgroundImageMain {background-image: url(\""+ self.bg_img + "\");" + "background-repeat: no-repeat;}")
@@ -322,9 +321,10 @@ class MainWindow(QMainWindow):
         textonly_conversion_window = TextOnlyConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get, deploy_folder=deploy_folder)
     
     def deff_conversion_window(self):
-        pass
-        #sc_folder_get = self.init_config.get(f'SC_Folder')
-        #deff_conversion_window = DeffConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_get)
+        sc_folder_get = self.init_config.get(f'SC_Folder')
+        deploy_folder = self.init_config.get(f'Deploy_Folder')
+        sc_folder_deff = sc_folder_get + f'\\SECT\\DRGN0.BIN\\'
+        deff_conversion_window = DeffConversionMainWindow(self, icon=self.icon, assets_database=self.assets_database, sc_folder=sc_folder_deff, deploy_folder=deploy_folder)
 
 if __name__ == '__main__':
     absolute_path_current = os.path.abspath(os.getcwd())
@@ -333,6 +333,10 @@ if __name__ == '__main__':
     background_image = f'{absolute_path_current}\\Resources\\main.png'.replace('\\', '/')
     icon_app = f'{absolute_path_current}\\Resources\\Dragoon_Eyes.ico'
     app = QApplication(sys.argv)
+    if os.path.exists(absolute_path_databases) == False:
+        database_not_found = f'Database Folder: {absolute_path_databases}, Not Found!!.\nCheck if Database Folder is placed as intended.\nExiting tool to avoid further errors...'
+        error_database_type = QMessageBox.critical(None, 'CRITICAL ERROR!!', database_not_found, QMessageBox.StandardButton.Ok)
+        raise RuntimeError()
     init_data = config_handler.ConfigurationHandler(option_file=absolute_path_config)
     build_database = database_handler.DatabaseHandler(database_path=absolute_path_databases)
     window = MainWindow(title='TLoD Assets Manager Beta v0.1', init_config=init_data.option_dict, init_config_path=absolute_path_config, assets_database=build_database.full_database, icon=icon_app, bg_img=background_image)

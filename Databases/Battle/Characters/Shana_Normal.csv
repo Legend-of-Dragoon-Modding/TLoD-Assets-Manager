@@ -1,10 +1,9 @@
-Texture,characters/shana/textures/combat!,,,,,
-Idle,/characters/shana/models/combat,32,characters/shana/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
-Attack,/characters/shana/models/combat,32,None,None,4047,"[16, 25, 35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 1,/characters/shana/models/combat,32,None,None,4048,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 2,/characters/shana/models/combat,32,None,None,4049,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 3,/characters/shana/models/combat,32,None,None,4050,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 4,/characters/shana/models/combat,32,None,None,4051,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 5,/characters/shana/models/combat,32,None,None,4052,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 6,/characters/shana/models/combat,32,None,None,4053,"[35, 36, 39, 41, 47, 58, 59, 63]"
-Shana No addition 7,/characters/shana/models/combat,32,None,None,4054,"[35, 36, 39, 41, 47, 58, 59, 63]"
+Idle,/characters/shana/models/combat,32,characters/shana/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None,characters/shana/textures/combat
+Attack,/characters/shana/models/combat,32,None,None,4047,"[16, 25, 35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 1,/characters/shana/models/combat,32,None,None,4048,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 2,/characters/shana/models/combat,32,None,None,4049,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 3,/characters/shana/models/combat,32,None,None,4050,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 4,/characters/shana/models/combat,32,None,None,4051,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 5,/characters/shana/models/combat,32,None,None,4052,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 6,/characters/shana/models/combat,32,None,None,4053,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat
+Shana No addition 7,/characters/shana/models/combat,32,None,None,4054,"[35, 36, 39, 41, 47, 58, 59, 63]",characters/shana/textures/combat

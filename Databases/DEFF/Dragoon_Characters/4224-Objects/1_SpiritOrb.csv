@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+10,StaticTMD,"10, 11",NONE,MeruNormal,94,170,0x16900,0x1,NONE,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0xc0, 0xffffffac, 0xffffffd0",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Scale,"0xb40, 0xb40, 0xb40",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

@@ -41,6 +41,27 @@ class Folders:
             error_folder_creation = QMessageBox.critical(None, 'CRITICAL SYSTEM ERROR!!', f'Folder: {self.deploy_folder_path}\n{error_folder}', QMessageBox.StandardButton.Ok)
             exit()
 
+class DeffFolders:
+    def __init__(self, deploy_folder_path=str, file_nesting=list) -> None:
+        self.deploy_folder_path = deploy_folder_path
+        self.file_nesting = file_nesting
+        self.new_deploy_path: str = ''
+        self.create_deff_folders()
+    
+    def create_deff_folders(self):
+        nesting_to_file: str = ''
+        for this_folder_nest in self.file_nesting:
+            this_path_str = f'{this_folder_nest}\\'
+            nesting_to_file += this_path_str
+
+        self.new_deploy_path = f'{self.deploy_folder_path}\\{nesting_to_file}'
+        try:
+            os.makedirs(self.new_deploy_path, exist_ok=True)
+        except OSError:
+            error_folder = f'Folder: {self.new_deploy_path} Can\'t be created, permission denied'
+            error_folder_creation = QMessageBox.critical(None, 'CRITICAL SYSTEM ERROR!!', error_folder, QMessageBox.StandardButton.Ok)
+            exit()
+
 class TextureFolder:
     def __init__(self, deploy_folder_path=str, file_nesting=str, file_name=str) -> None:
         self.deploy_folder_path = deploy_folder_path

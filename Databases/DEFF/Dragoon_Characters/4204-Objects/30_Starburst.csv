@@ -1,0 +1,9 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+NONE,Starburst,NONE,NONE,Main,686,709,0x0,0x50,Starburst,NONE
+ScriptAnimation,6,,,,,,,,,
+Relative Position,Main,"0x0, 0xfffffc18, 0x0",,,,,,,,
+Relative Rotation,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Scale,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Color,Main,"0x0, 0x0, 0x0",,,,,,,,
+AddConstantColourScalerAttachment,Main,"0x80, 0x40, 0x0",0x4,,,,,,,
+AddConstantColourScalerAttachment,Main,"0x0, 0x0, 0x0",0x4,,,,,,,

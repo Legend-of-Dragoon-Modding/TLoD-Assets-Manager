@@ -1,10 +1,9 @@
-Texture,characters/haschel/textures/combat!,,,,,
-Idle,/characters/haschel/models/combat,32,characters/haschel/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
-Double Punch,/characters/haschel/models/combat,32,None,None,4063,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Ferry of Styx,/characters/haschel/models/combat,32,None,None,4064,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Summon 4 Gods,/characters/haschel/models/combat,32,None,None,4065,"[16, 17, 18, 19, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-5-Ring Shattering,/characters/haschel/models/combat,32,None,None,4066,"[16, 17, 18, 19, 20, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Hex Hammer,/characters/haschel/models/combat,32,None,None,4067,"[16, 17, 18, 19, 20, 21, 22, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Omni-Sweep,/characters/haschel/models/combat,32,None,None,4068,"[16, 17, 18, 19, 20, 21, 22, 23, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 1,/characters/haschel/models/combat,32,None,None,4069,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 2,/characters/haschel/models/combat,32,None,None,4070,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+Idle,/characters/haschel/models/combat,32,characters/haschel/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None,characters/haschel/textures/combat
+Double Punch,/characters/haschel/models/combat,32,None,None,4063,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+Ferry of Styx,/characters/haschel/models/combat,32,None,None,4064,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+Summon 4 Gods,/characters/haschel/models/combat,32,None,None,4065,"[16, 17, 18, 19, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+5-Ring Shattering,/characters/haschel/models/combat,32,None,None,4066,"[16, 17, 18, 19, 20, 25, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+Hex Hammer,/characters/haschel/models/combat,32,None,None,4067,"[16, 17, 18, 19, 20, 21, 22, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+Omni-Sweep,/characters/haschel/models/combat,32,None,None,4068,"[16, 17, 18, 19, 20, 21, 22, 23, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+No addition 1,/characters/haschel/models/combat,32,None,None,4069,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat
+No addition 2,/characters/haschel/models/combat,32,None,None,4070,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/haschel/textures/combat

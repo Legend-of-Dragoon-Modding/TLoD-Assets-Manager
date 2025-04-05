@@ -64,7 +64,7 @@ class BinariesToDict:
         files = self.binaries_to_dict.get('Files')
 
         for current_file in files:
-            file_path = f'{path_to_files}/{current_file}'
+            file_path = f'{path_to_files}/{current_file}'.replace('/', '\\').replace('//', '\\').replace('\\\\', '\\')
             try:
                 with open(file_path, 'rb') as binary_file_stream:
                     binary_file_read = binary_file_stream.read()

@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+12,StaticTMD,"13, 14",NONE,DartDragoon,529,616,0xe01,0x1,NONE,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,DartDragoon,"0x0, 0xfffffc18, 0xffffff9c",,,,,,,,
+Relative Rotation,DartDragoon,"0x0, 0x0, 0x0",,,,,,,,
+Relative Scale,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Color,Main,"0x0, 0x0, 0x0",,,,,,,,

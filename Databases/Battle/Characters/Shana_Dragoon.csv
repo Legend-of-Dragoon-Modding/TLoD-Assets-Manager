@@ -1,2 +1,1 @@
-Texture,characters/shana/textures/dragoon!,,,,,
-Idle,/characters/shana/models/dragoon,32,characters/shana/models/dragoon,"[0, 1, 14, 29]",None,None
+Idle,/characters/shana/models/dragoon,32,characters/shana/models/dragoon,"[0, 1, 14, 29]",None,None,characters/shana/textures/dragoon

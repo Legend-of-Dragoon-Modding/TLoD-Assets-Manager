@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+NONE,GeneratedParticle,NONE,NONE,Main,175,186,0x0,"RANDOM(1,2)",Electricity,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0x0, 0xfffffce0, 0x0",,,,,,,,,
+Relative Rotation,"RANDOM, 0x0, 0x0",,,,,,,,,
+Relative Scale,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Color,"0x18, 0x0, 0xa0",,,,,,,,,

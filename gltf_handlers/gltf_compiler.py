@@ -555,9 +555,9 @@ class NewGltfModel:
         vertex_array_0_bin = vertex_array_0_32bit.tobytes()
         vertex_array_1_bin = vertex_array_1_32bit.tobytes()
         vertex_array_2_bin = vertex_array_2_32bit.tobytes()
-        self.new_vertex_array.append(vertex_array_0_bin)
-        self.new_vertex_array.append(vertex_array_1_bin)
         self.new_vertex_array.append(vertex_array_2_bin)
+        self.new_vertex_array.append(vertex_array_1_bin)
+        self.new_vertex_array.append(vertex_array_0_bin)
 
     def normal_to_gltf_4vertex(self, normal_array=dict, nind_0=str, nind_1=str, nind_2=str, nind_3=str) -> None:
         """
@@ -569,7 +569,7 @@ class NewGltfModel:
         # glTF Normal Conversion
         if (nind_0 != None) and ((nind_1 == None) and (nind_2 == None) and (nind_3 == None)):
             normal_0 = normal_array.get(f'Normal_Number_{nind_0}')
-            normal_array_0_32bit = numpy.array([(normal_0.get('VecX') / 4096), (normal_0.get('VecY') / 4096), (normal_0.get('VecZ') / 4096)], dtype="float32")
+            normal_array_0_32bit = numpy.array([(normal_0.get('VecX')), (normal_0.get('VecY')), (normal_0.get('VecZ'))], dtype="float32")
             normal_array_0_bin = normal_array_0_32bit.tobytes()
             self.new_normal_array.append(normal_array_0_bin)
             self.new_normal_array.append(normal_array_0_bin)
@@ -582,10 +582,10 @@ class NewGltfModel:
             normal_1 = normal_array.get(f'Normal_Number_{nind_1}')
             normal_2 = normal_array.get(f'Normal_Number_{nind_2}')
             normal_3 = normal_array.get(f'Normal_Number_{nind_3}')
-            normal_array_0_32bit = numpy.array([(normal_0.get('VecX') / 4096), (normal_0.get('VecY') / 4096), (normal_0.get('VecZ') / 4096)], dtype="float32")
-            normal_array_1_32bit = numpy.array([(normal_1.get('VecX') / 4096), (normal_1.get('VecY') / 4096), (normal_1.get('VecZ') / 4096)], dtype="float32")
-            normal_array_2_32bit = numpy.array([(normal_2.get('VecX') / 4096), (normal_2.get('VecY') / 4096), (normal_2.get('VecZ') / 4096)], dtype="float32")
-            normal_array_3_32bit = numpy.array([(normal_3.get('VecX') / 4096), (normal_3.get('VecY') / 4096), (normal_3.get('VecZ') / 4096)], dtype="float32")
+            normal_array_0_32bit = numpy.array([(normal_0.get('VecX')), (normal_0.get('VecY')), (normal_0.get('VecZ'))], dtype="float32")
+            normal_array_1_32bit = numpy.array([(normal_1.get('VecX')), (normal_1.get('VecY')), (normal_1.get('VecZ'))], dtype="float32")
+            normal_array_2_32bit = numpy.array([(normal_2.get('VecX')), (normal_2.get('VecY')), (normal_2.get('VecZ'))], dtype="float32")
+            normal_array_3_32bit = numpy.array([(normal_3.get('VecX')), (normal_3.get('VecY')), (normal_3.get('VecZ'))], dtype="float32")
             normal_array_0_bin = normal_array_0_32bit.tobytes()
             normal_array_1_bin = normal_array_1_32bit.tobytes()
             normal_array_2_bin = normal_array_2_32bit.tobytes()
@@ -606,7 +606,7 @@ class NewGltfModel:
         # glTF Normal Conversion
         if (nind_0 != None) and ((nind_1 == None) and (nind_2 == None)):
             normal_0 = normal_array.get(f'Normal_Number_{nind_0}')
-            normal_array_0_32bit = numpy.array([(normal_0.get('VecX') / 4096), (normal_0.get('VecY') / 4096), (normal_0.get('VecZ') / 4096)], dtype="float32")
+            normal_array_0_32bit = numpy.array([(normal_0.get('VecX')), (normal_0.get('VecY')), (normal_0.get('VecZ'))], dtype="float32")
             normal_array_0_bin = normal_array_0_32bit.tobytes()
             self.new_normal_array.append(normal_array_0_bin)
             self.new_normal_array.append(normal_array_0_bin)
@@ -616,15 +616,15 @@ class NewGltfModel:
             normal_0 = normal_array.get(f'Normal_Number_{nind_0}')
             normal_1 = normal_array.get(f'Normal_Number_{nind_1}')
             normal_2 = normal_array.get(f'Normal_Number_{nind_2}')
-            normal_array_0_32bit = numpy.array([(normal_0.get('VecX') / 4096), (normal_0.get('VecY') / 4096), (normal_0.get('VecZ') / 4096)], dtype="float32")
-            normal_array_1_32bit = numpy.array([(normal_1.get('VecX') / 4096), (normal_1.get('VecY') / 4096), (normal_1.get('VecZ') / 4096)], dtype="float32")
-            normal_array_2_32bit = numpy.array([(normal_2.get('VecX') / 4096), (normal_2.get('VecY') / 4096), (normal_2.get('VecZ') / 4096)], dtype="float32")
+            normal_array_0_32bit = numpy.array([(normal_0.get('VecX')), (normal_0.get('VecY')), (normal_0.get('VecZ'))], dtype="float32")
+            normal_array_1_32bit = numpy.array([(normal_1.get('VecX')), (normal_1.get('VecY')), (normal_1.get('VecZ'))], dtype="float32")
+            normal_array_2_32bit = numpy.array([(normal_2.get('VecX')), (normal_2.get('VecY')), (normal_2.get('VecZ'))], dtype="float32")
             normal_array_0_bin = normal_array_0_32bit.tobytes()
             normal_array_1_bin = normal_array_1_32bit.tobytes()
             normal_array_2_bin = normal_array_2_32bit.tobytes()
-            self.new_normal_array.append(normal_array_0_bin)
-            self.new_normal_array.append(normal_array_1_bin)
             self.new_normal_array.append(normal_array_2_bin)
+            self.new_normal_array.append(normal_array_1_bin)
+            self.new_normal_array.append(normal_array_0_bin)
 
     def uv_to_gltf_4vertex(self, prim_data=dict) -> None:
         """
@@ -715,9 +715,9 @@ class NewGltfModel:
         join_uv_2 = b''.join(uv_2_bin)
         # Appending the UV for each vertex this way:
         # Triangle: Vertex 0, Vertex 1, Vertex 2
-        self.new_uv_array.append(join_uv_0)
-        self.new_uv_array.append(join_uv_1)
         self.new_uv_array.append(join_uv_2)
+        self.new_uv_array.append(join_uv_1)
+        self.new_uv_array.append(join_uv_0)
 
     def non_uv_to_gltf_4vertex(self) -> None:
         """
@@ -896,9 +896,9 @@ class NewGltfModel:
         join_rgba_vertex_2 = b''.join(rgb_bin_2)
         # Appending the color for each vertex this way:
         # Triangle: Vertex 0, Vertex 1, Vertex 2
-        self.new_col_array.append(join_rgba_vertex_0)
-        self.new_col_array.append(join_rgba_vertex_1)
         self.new_col_array.append(join_rgba_vertex_2)
+        self.new_col_array.append(join_rgba_vertex_1)
+        self.new_col_array.append(join_rgba_vertex_0)
 
     def non_color_to_gltf_4vertex(self) -> None:
         """

@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+"15, 16, 17",FaceTexture,"20, 21, 22",NONE,NONE,0,0,"0xE00, 0xE01, 0xE02",0x3,NONE,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Scale,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

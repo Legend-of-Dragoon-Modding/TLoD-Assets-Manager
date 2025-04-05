@@ -1,2 +1,1 @@
-Texture,characters/miranda/textures/dragoon!,,,,,
-Idle,/characters/miranda/models/dragoon,32,characters/miranda/models/dragoon,"[0, 1, 14, 29]",None,None
+Idle,/characters/miranda/models/dragoon,32,characters/miranda/models/dragoon,"[0, 1, 14, 29]",None,None,characters/miranda/textures/dragoon

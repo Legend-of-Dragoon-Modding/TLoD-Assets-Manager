@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+4,StaticTMD,"2, 3",NONE,Main,574,656,NONE,0xa00,NONE,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0x0, 0xfffffc18, 0xfffffed4",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x0 ",,,,,,,,,
+Relative Scale,"0x0, 0x0, 0x0 ",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

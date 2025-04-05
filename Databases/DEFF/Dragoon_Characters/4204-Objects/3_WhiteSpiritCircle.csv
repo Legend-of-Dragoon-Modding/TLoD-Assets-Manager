@@ -1,0 +1,9 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+6,StaticTMD,NONE,NONE,DartNormal,119,242,0xa01,0x6,NONE,0x3
+ScriptAnimation,6,,,,,,,,,
+Relative Position,DartNormal,"0x0, 0xfffffc7c, 0xffffff06",,,,,,,,
+Relative Rotation,DartNormal,"0x0, 0x0, 0x0",,,,,,,,
+Relative Scale,DartNormal,"0x0, 0x0, 0x0",,,,,,,,
+Relative Color,Main,"0x80, 0x80, 0x80",,,,,,,,
+scriptAddScaleScalerMultiplicativeAttachmentTicks,DartNormal,"0x2000, 0x2000, 0x2000",0x2,,,,,,,
+scriptSetEffectZ,NONE,NONE,0xffffff00,,,,,,,

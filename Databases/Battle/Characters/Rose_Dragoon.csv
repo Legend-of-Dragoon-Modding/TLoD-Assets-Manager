@@ -1,2 +1,1 @@
-Texture,characters/rose/textures/dragoon!,,,,,
-Idle,/characters/rose/models/dragoon,32,characters/rose/models/dragoon,"[0, 1, 14, 29]",None,None
+Idle,/characters/rose/models/dragoon,32,characters/rose/models/dragoon,"[0, 1, 14, 29]",None,None,characters/rose/textures/dragoon

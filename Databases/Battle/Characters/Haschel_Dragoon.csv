@@ -1,2 +1,1 @@
-Texture,characters/haschel/textures/dragoon!,,,,,
-Idle,/characters/haschel/models/dragoon,32,characters/haschel/models/dragoon,"[0, 1, 14, 29]",None,None
+Idle,/characters/haschel/models/dragoon,32,characters/haschel/models/dragoon,"[0, 1, 14, 29]",None,None,characters/haschel/textures/dragoon

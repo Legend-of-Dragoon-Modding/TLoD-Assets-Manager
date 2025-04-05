@@ -134,9 +134,9 @@ class BinaryDataModel:
         Convert Each Vertex Vector [X, Y, Z] and applying it's desired Scale\n(before this one of the last step, i change this right now)
         """
         if self.type_of_data == 'Normal':
-            vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True)
-            vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True)
-            vector_z: float = int.from_bytes(v_block[4:6], 'little', signed=True)
+            vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True) / 4096
+            vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True) / 4096
+            vector_z: float = int.from_bytes(v_block[4:6], 'little', signed=True) / 4096
         else:
             vector_x: float = int.from_bytes(v_block[0:2], 'little', signed=True) / 1000
             vector_y: float = int.from_bytes(v_block[2:4], 'little', signed=True) / 1000
@@ -152,8 +152,8 @@ class BinaryDataModel:
             decoded_primitive: dict = {f'Prim_Num_{this_primitive}': {}}
             current_primitive = bin_block[next_primitive_in_array:]
             primitive_packet_header = current_primitive[0:4]
-            olen = primitive_packet_header[0] # Currently not used
-            ilen = primitive_packet_header[1]
+            olen = primitive_packet_header[0] # Currently not used and i think will ever use it lol
+            ilen = 0 #primitive_packet_header[1] // I don't need this
             flag = primitive_packet_header[2]
             mode = primitive_packet_header[3]
 
@@ -222,12 +222,14 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[8:10], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[10:12], byteorder='little'), 
                         f'normal1': int.from_bytes(current_primitive[12:14], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[14:16], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[18:20], byteorder='little')}
+                        ilen = 4
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_') and (grad_var == f'Solid_'):
                         decoded_data_in_primitive = {
                         f'r0': int.from_bytes(current_primitive[4:5], byteorder='little'), f'g0': int.from_bytes(current_primitive[5:6], byteorder='little'), f'b0': int.from_bytes(current_primitive[6:7], byteorder='little'), f'mode_val': current_primitive[7:8], 
                         f'normal0': int.from_bytes(current_primitive[8:10], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[10:12], byteorder='little'), 
                         f'vertex1': int.from_bytes(current_primitive[12:14], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[14:16], byteorder='little')}
+                        ilen = 3
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Gouraud_') and (grad_var == f'Gradation_'):
                         decoded_data_in_primitive = {
@@ -237,6 +239,7 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[18:20], byteorder='little'), 
                         f'normal1': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[22:24], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[26:28], byteorder='little')}
+                        ilen = 6
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_') and (grad_var == f'Gradation_'):
                         decoded_data_in_primitive = {
@@ -245,6 +248,7 @@ class BinaryDataModel:
                         f'r2': int.from_bytes(current_primitive[12:13], byteorder='little'), f'g2': int.from_bytes(current_primitive[13:14], byteorder='little'), f'b2': int.from_bytes(current_primitive[14:15], byteorder='little'), f'pad_val1': current_primitive[15:16], 
                         f'normal0': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[18:20], byteorder='little'),
                         f'vertex1': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[22:24], byteorder='little')}
+                        ilen = 5
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Gouraud_'):
                         decoded_data_in_primitive = {
@@ -254,6 +258,7 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[18:20], byteorder='little'), 
                         f'normal1': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[22:24], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[26:28], byteorder='little')}
+                        ilen = 6
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
@@ -262,6 +267,7 @@ class BinaryDataModel:
                         f'u2': (int.from_bytes(current_primitive[12:13], byteorder='little') / 256), f'v2': (int.from_bytes(current_primitive[13:14], byteorder='little') / 256), f'pad_value0': current_primitive[14:16], 
                         f'normal0': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[18:20], byteorder='little'), 
                         f'vertex1': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[22:24], byteorder='little')}
+                        ilen = 5
                     
                 elif vertex_var == f'4Vertex_':
                     if (texture_var == 'No-Texture_') and (shading_var == f'Gouraud_') and (grad_var == f'Solid_'):
@@ -271,6 +277,7 @@ class BinaryDataModel:
                         f'normal1': int.from_bytes(current_primitive[12:14], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[14:16], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[18:20], byteorder='little'),
                         f'normal3': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[22:24], byteorder='little')}
+                        ilen = 5
 
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_') and (grad_var == f'Solid_'):
                         decoded_data_in_primitive = {
@@ -278,6 +285,7 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[8:10], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[10:12], byteorder='little'), 
                         f'vertex1': int.from_bytes(current_primitive[12:14], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[14:16], byteorder='little'),
                         f'vertex3': int.from_bytes(current_primitive[16:18], byteorder='little'), f'pad_value0': int.from_bytes(current_primitive[18:20], byteorder='little')}
+                        ilen = 4
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Gouraud_') and (grad_var == f'Gradation_'):
                         decoded_data_in_primitive = {
@@ -289,6 +297,7 @@ class BinaryDataModel:
                         f'normal1': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[26:28], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[28:30], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[30:32], byteorder='little'),
                         f'normal3': int.from_bytes(current_primitive[32:34], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[34:36], byteorder='little')}
+                        ilen = 8
 
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_') and (grad_var == f'Gradation_'):
                         decoded_data_in_primitive = {
@@ -299,6 +308,7 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[22:24], byteorder='little'),
                         f'vertex1': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[26:28], byteorder='little'), 
                         f'vertex3': int.from_bytes(current_primitive[28:30], byteorder='little'), f'pad_val3': int.from_bytes(current_primitive[30:32], byteorder='little')}
+                        ilen = 7
                         
                     elif (texture_var == 'Texture_') and (shading_var == f'Gouraud_'):
                         decoded_data_in_primitive = {
@@ -310,6 +320,7 @@ class BinaryDataModel:
                         f'normal1': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[26:28], byteorder='little'), 
                         f'normal2': int.from_bytes(current_primitive[28:30], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[30:32], byteorder='little'), 
                         f'normal3': int.from_bytes(current_primitive[32:34], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[34:36], byteorder='little')}
+                        ilen = 8
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
@@ -320,6 +331,7 @@ class BinaryDataModel:
                         f'normal0': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex0': int.from_bytes(current_primitive[22:24], byteorder='little'), 
                         f'vertex1': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex2': int.from_bytes(current_primitive[26:28], byteorder='little'), 
                         f'vertex3': int.from_bytes(current_primitive[28:30], byteorder='little'), f'pad_value2': int.from_bytes(current_primitive[30:32], byteorder='little')}
+                        ilen = 7
                 
                 else:
                     no_vertex_primitive_lsc = f'Not reading a Vertex Primitive Data (LSC)... exiting...'
@@ -335,12 +347,14 @@ class BinaryDataModel:
                         f'r2': int.from_bytes(current_primitive[12:13], byteorder='little'), f'g2': int.from_bytes(current_primitive[13:14], byteorder='little'), f'b2': int.from_bytes(current_primitive[14:15], byteorder='little'), f'pad_val1': current_primitive[15:16], 
                         f'vertex0': int.from_bytes(current_primitive[16:18], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[18:20], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[20:22], byteorder='little'), f'pad_value1': current_primitive[22:24]}
+                        ilen = 5
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
                         f'r0': int.from_bytes(current_primitive[4:5], byteorder='little'), f'g0': int.from_bytes(current_primitive[5:6], byteorder='little'), f'b0': int.from_bytes(current_primitive[6:7], byteorder='little'), f'mode_val': current_primitive[7:8], 
                         f'vertex0': int.from_bytes(current_primitive[8:10], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[10:12], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[12:14], byteorder='little'), f'pad_val0': int.from_bytes(current_primitive[14:16], byteorder='little')}
+                        ilen = 3
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Gouraud_'):
                         decoded_data_in_primitive = {
@@ -352,6 +366,7 @@ class BinaryDataModel:
                         f'r2': int.from_bytes(current_primitive[24:25], byteorder='little'), f'g2': int.from_bytes(current_primitive[25:26], byteorder='little'), f'b2': int.from_bytes(current_primitive[26:27], byteorder='little'), f'pad_val3': current_primitive[27:28],
                         f'vertex0': int.from_bytes(current_primitive[28:30], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[30:32], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[32:34], byteorder='little'), f'pad_val4': int.from_bytes(current_primitive[34:36], byteorder='little')}
+                        ilen = 8
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
@@ -361,6 +376,7 @@ class BinaryDataModel:
                         f'r0': int.from_bytes(current_primitive[16:17], byteorder='little'), f'g0': int.from_bytes(current_primitive[17:18], byteorder='little'), f'b0': int.from_bytes(current_primitive[18:19], byteorder='little'), f'pad_val1': current_primitive[19:20], 
                         f'vertex0': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[22:24], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[24:26], byteorder='little'), f'pad_value2': int.from_bytes(current_primitive[26:28], byteorder='little')}
+                        ilen = 6
                 
                 elif vertex_var == f'4Vertex_':
                     if (texture_var == 'No-Texture_') and (shading_var == f'Gouraud_'):
@@ -371,12 +387,14 @@ class BinaryDataModel:
                         f'r3': int.from_bytes(current_primitive[16:17], byteorder='little'), f'g3': int.from_bytes(current_primitive[17:18], byteorder='little'), f'b3': int.from_bytes(current_primitive[18:19], byteorder='little'), f'pad_val2': current_primitive[19:20], 
                         f'vertex0': int.from_bytes(current_primitive[20:22], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[22:24], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex3': current_primitive[26:28]}
+                        ilen = 6
                     
                     elif (texture_var == 'No-Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
                         f'r0': int.from_bytes(current_primitive[4:5], byteorder='little'), f'g0': int.from_bytes(current_primitive[5:6], byteorder='little'), f'b0': int.from_bytes(current_primitive[6:7], byteorder='little'), f'mode_val': current_primitive[7:8], 
                         f'vertex0': int.from_bytes(current_primitive[8:10], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[10:12], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[12:14], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[14:16], byteorder='little')}
+                        ilen = 3
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Gouraud_'):
                         decoded_data_in_primitive = {
@@ -390,6 +408,7 @@ class BinaryDataModel:
                         f'r3': int.from_bytes(current_primitive[32:33], byteorder='little'), f'g3': int.from_bytes(current_primitive[33:34], byteorder='little'), f'b3': int.from_bytes(current_primitive[34:35], byteorder='little'), f'pad_val5': current_primitive[35:36], 
                         f'vertex0': int.from_bytes(current_primitive[36:38], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[38:40], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[40:42], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[42:44], byteorder='little')}
+                        ilen = 10
                     
                     elif (texture_var == 'Texture_') and (shading_var == f'Flat_'):
                         decoded_data_in_primitive = {
@@ -400,6 +419,7 @@ class BinaryDataModel:
                         f'r0': int.from_bytes(current_primitive[20:21], byteorder='little'), f'g0': int.from_bytes(current_primitive[21:22], byteorder='little'), f'b0': int.from_bytes(current_primitive[22:23], byteorder='little'), f'pad_val2': current_primitive[23:24], 
                         f'vertex0': int.from_bytes(current_primitive[24:26], byteorder='little'), f'vertex1': int.from_bytes(current_primitive[26:28], byteorder='little'), 
                         f'vertex2': int.from_bytes(current_primitive[28:30], byteorder='little'), f'vertex3': int.from_bytes(current_primitive[30:32], byteorder='little')}
+                        ilen = 7
                 
                 else:
                     no_vertex_primitive_nlsc = f'Not reading Vertex Primitive Data (NLSC)... exiting...'
@@ -428,15 +448,6 @@ class BinaryDataAnimation:
         if self.animation_type == 'SAF':
             saf_converted = self.convert_saf()
             self.animation_converted = saf_converted
-            #print(f'SAF Animation Successfully converted')
-        elif self.animation_type == 'CMB':
-            pass
-        elif self.animation_type == 'LMB_Type0':
-            pass
-        elif self.animation_type == 'LMB_Type1':
-            pass
-        elif self.animation_type == 'LMB_Type2':
-            pass
         else:
             no_animation_converter = f'Animation Type: {self.animation_type}, have no Converter/Handler Implemented'
             error_no_conversion_animation = QMessageBox.critical(None, 'CRITICAL ERROR!!', f'FATAL!!:\n{no_animation_converter}', QMessageBox.StandardButton.Ok)

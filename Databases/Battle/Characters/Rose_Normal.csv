@@ -1,10 +1,9 @@
-Texture,characters/rose/textures/combat!,,,,,
-Idle,/characters/rose/models/combat,32,characters/rose/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None
-Whip Smack,/characters/rose/models/combat,32,None,None,4055,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-More and More,/characters/rose/models/combat,32,None,None,4056,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Hard Blade,/characters/rose/models/combat,32,None,None,4057,"[16, 17, 18, 19, 20, 21, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-Demon's Dance,/characters/rose/models/combat,32,None,None,4058,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 1,/characters/rose/models/combat,32,None,None,4059,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 2,/characters/rose/models/combat,32,None,None,4060,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 3,/characters/rose/models/combat,32,None,None,4061,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
-No addition 4,/characters/rose/models/combat,32,None,None,4062,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]"
+Idle,/characters/rose/models/combat,32,characters/rose/models/combat,"[0, 1, 5, 10, 11, 14, 29]",None,None,characters/rose/textures/combat
+Whip Smack,/characters/rose/models/combat,32,None,None,4055,"[16, 17, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+More and More,/characters/rose/models/combat,32,None,None,4056,"[16, 17, 18, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+Hard Blade,/characters/rose/models/combat,32,None,None,4057,"[16, 17, 18, 19, 20, 21, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+Demon's Dance,/characters/rose/models/combat,32,None,None,4058,"[16, 17, 18, 19, 20, 21, 22, 23, 24, 34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+No addition 1,/characters/rose/models/combat,32,None,None,4059,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+No addition 2,/characters/rose/models/combat,32,None,None,4060,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+No addition 3,/characters/rose/models/combat,32,None,None,4061,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat
+No addition 4,/characters/rose/models/combat,32,None,None,4062,"[34, 35, 36, 38, 39, 40, 41, 47, 58, 59, 63]",characters/rose/textures/combat

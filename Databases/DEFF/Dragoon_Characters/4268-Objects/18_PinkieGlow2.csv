@@ -1,0 +1,7 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+14,ParticleFile,15,NONE,Main,506,601,0x2201,0x28,ExplosionUniform,NONE
+ScriptAnimation,4,,,,,,,,,
+Relative Position,"0x0, 0xfffffa24, 0x190",,,,,,,,,
+Relative Rotation,"0x0, 0x0, 0x0",,,,,,,,,
+Relative Scale,"0x100, 0x100, 0x100",,,,,,,,,
+Relative Color,"0x0, 0x0, 0x0",,,,,,,,,

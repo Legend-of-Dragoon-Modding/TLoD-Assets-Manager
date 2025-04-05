@@ -1,0 +1,17 @@
+FILE,FILETYPE,TEXTURES,ANIM FILES,PARENT,FRAME START,FRAME END,PARTICLE TYPE,COUNT,SIMULATION TYPE,LIFESPAN
+2,AnimatedTMD-CMB,1,NONE,Main,598,746,0x2001,0x1,NONE,NONE
+ScriptAnimation,14,,,,,,,,,
+Relative Position,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Rotation,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Scale,Main,"0x0, 0x0, 0x0",,,,,,,,
+Relative Color,Main,"0x0, 0x0, 0x0",,,,,,,,
+HideEffectModelPart,DartNormal,0x13,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x14,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x15,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x16,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x17,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x18,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x19,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x1a,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x1b,FrameStart:450,FrameEnd:616,,,,,,
+HideEffectModelPart,DartNormal,0x1c,FrameStart:450,FrameEnd:616,,,,,,

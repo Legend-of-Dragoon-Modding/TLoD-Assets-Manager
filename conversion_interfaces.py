@@ -11,6 +11,7 @@ Copyright (C) 2024 DooMMetaL
 from file_handlers import asunder_binary_data, binary_to_dict, folder_handler, debug_files_writer
 from gltf_handlers import gltf_compiler, gltf_converter
 from texture_handlers import png_writer
+from deff_handlers import deff_scene
 
 class BattleConversionInterface():
     def __init__(self, list_convert=list, assets_battle_database=dict, conv_passive_anims=bool, conv_attack_anims=bool, conv_text=bool, 
@@ -675,3 +676,27 @@ class WorldMapConversionInterface():
                 png_file_write = png_writer.PngFile(texture_data=processed_data_texture.texture_converted_data, file_deploy_path=new_folder_textures.new_file_name, texture_type=format)
         
         return file_name
+
+class DeffConversionInterface():
+    def __init__(self, deff_convert=dict, conv_textures=bool, conv_particles=bool, scene_flag=bool, sc_folder=str, deploy_folder=str, selected_parent=str):
+        self.deff_convert = deff_convert
+        self.convert_textures = conv_textures
+        self.convert_particles = conv_particles
+        self.scene_flag = scene_flag
+        self.sc_folder = sc_folder
+        self.deploy_folder = deploy_folder
+        self.selected_parent = selected_parent
+        self.run_deff_conversion()
+    
+    def run_deff_conversion(self):
+        """
+        Run DEFF Conversion:\n
+        Not similar to the previous code, in here i will be converting Object by Object or everything at once.
+        """
+        convert_deff_data = deff_scene.DeffScene(scene_flag=self.scene_flag, 
+                                                 convert_particles=self.convert_particles, 
+                                                 convert_textures=self.convert_textures, 
+                                                 data_to_convert=self.deff_convert, 
+                                                 selected_parent=self.selected_parent, 
+                                                 sc_folder=self.sc_folder, 
+                                                 deploy_folder=self.deploy_folder)
